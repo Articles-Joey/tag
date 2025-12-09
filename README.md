@@ -1,6 +1,8 @@
 # Tag
 
-...
+Avoid other players and collect as much objects as possible, if you become tagged then you must tag someone else before you can collect objects again.
+
+![Preview](public/img/preview.webp)
 
 ## Getting Started
 

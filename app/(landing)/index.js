@@ -343,7 +343,24 @@ export default function TagGameLandingPage() {
                             Rules & Controls
                         </ArticlesButton>
 
-                        <Link href={'/'} className='w-50'>
+                        <Link
+                            target='_blank'
+                            href={'https://github.com/Articles-Joey/tag'}
+                            className='w-50'
+                        >
+                            <ArticlesButton
+                                className={`w-100`}
+                                small
+                                onClick={() => {
+
+                                }}
+                            >
+                                <i className="fab fa-github"></i>
+                                Github
+                            </ArticlesButton>
+                        </Link>
+
+                        {/* <Link href={'/'} className='w-50'>
                             <ArticlesButton
                                 className={`w-100`}
                                 small
@@ -354,7 +371,7 @@ export default function TagGameLandingPage() {
                                 <i className="fad fa-sign-out fa-rotate-180"></i>
                                 Leave Game
                             </ArticlesButton>
-                        </Link>
+                        </Link> */}
 
                         <ArticlesButton
                             className={`w-50`}
