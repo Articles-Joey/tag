@@ -1,5 +1,7 @@
 import { useSphere } from "@react-three/cannon";
-import Duck from "@/components/Models/Duck";
+
+import { DuckModel as Duck } from "@/components/Models/Duck.jsx";
+// import Duck from "@/components/Models/Duck";
 
 export default function BotPlayer() {
 

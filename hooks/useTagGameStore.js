@@ -72,6 +72,9 @@ export const useTagGameStore = create((set) => ({
 	setPlayer: (ref, api) => set({ ref, api }),
     setPosition: (position) => set({ position }),
 
+    sprintEnergy: 5,
+    setSprintEnergy: (sprintEnergy) => set({ sprintEnergy }),
+
     tagCounter: 0,
     setTagCounter: (tagCounter) => set({ tagCounter }),
 }))

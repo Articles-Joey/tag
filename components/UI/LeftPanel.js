@@ -57,7 +57,7 @@ export default function LeftPanelContent(props) {
     }));
 
     return (
-        <div className='w-100'>
+        <div className='w-100' id="left-panel-content">
 
             <div className="card card-articles card-sm">
 
@@ -162,9 +162,9 @@ export default function LeftPanelContent(props) {
                                 size="sm"
                                 className="w-50"
                                 active={controlType == "Player"}
-                                // onClick={() => {
-                                //     setTouchControlsEnabled(false)
-                                // }}
+                            // onClick={() => {
+                            //     setTouchControlsEnabled(false)
+                            // }}
                             >
                                 <i className="fad fa-redo"></i>
                                 Player
@@ -173,10 +173,10 @@ export default function LeftPanelContent(props) {
                             <ArticlesButton
                                 size="sm"
                                 className="w-50"
-                                // active={touchControlsEnabled}
-                                // onClick={() => {
-                                //     setTouchControlsEnabled(true)
-                                // }}
+                            // active={touchControlsEnabled}
+                            // onClick={() => {
+                            //     setTouchControlsEnabled(true)
+                            // }}
                             >
                                 <i className="fad fa-redo"></i>
                                 Free Cam
@@ -260,7 +260,18 @@ export default function LeftPanelContent(props) {
                             </ArticlesButton>
 
                             <div className='w-50'>
-                            <DropdownButton
+                                <ArticlesButton
+                                    size="sm"
+                                    className="w-100"
+                                    onClick={() => {
+                                        setDebug(!debug)
+                                        reloadScene()
+                                    }}
+                                >
+                                    <i className="fad fa-bug"></i>
+                                    Debug: {debug ? 'On' : 'Off'}
+                                </ArticlesButton>
+                                {/* <DropdownButton
                                 variant="articles w-100"
                                 size='sm'
                                 id="dropdown-basic-button"
@@ -294,8 +305,8 @@ export default function LeftPanelContent(props) {
 
                                 </div>
 
-                            </DropdownButton>
-                        </div>
+                            </DropdownButton> */}
+                            </div>
 
                         </div>
 

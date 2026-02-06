@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 import { useBox } from '@react-three/cannon';
 
-export default function Ground(props) {
+function Ground(props) {
 
     // This reference gives us direct access to the THREE.Mesh object
     // const ref = useRef()
@@ -38,3 +38,5 @@ export default function Ground(props) {
     )
 
 }
+
+export default memo(Ground);

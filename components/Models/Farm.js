@@ -16,4 +16,4 @@ export function Farm(props) {
     )
 }
 
-useGLTF.preload('/Farm.glb')
+useGLTF.preload(link)

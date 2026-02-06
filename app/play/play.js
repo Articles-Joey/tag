@@ -21,6 +21,7 @@ import { useControllerStore } from '@/hooks/useControllerStore';
 import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
 import LeftPanelContent from '@/components/UI/LeftPanel';
 import { useSocketStore } from '@/hooks/useSocketStore';
+import SprintMeter from '@/components/UI/SprintMeter';
 
 const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
     ssr: false,
@@ -169,6 +170,8 @@ export default function TagGamePage() {
             </div> */}
 
             <div className='canvas-wrap'>
+
+                <SprintMeter />
 
                 <GameCanvas
                     key={sceneKey}
