@@ -27,6 +27,7 @@ import { usePeerStore } from '@/hooks/usePeerStore';
 import { useTagGameStore } from '@/hooks/useTagGameStore';
 import { useStore } from '@/hooks/useStore';
 import classNames from 'classnames';
+import AudioHandler from '@/components/Game/AudioHandler';
 
 const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
     ssr: false,
@@ -371,6 +372,8 @@ export default function TagGamePage() {
             }
             id="tag-game-page"
         >
+
+            <AudioHandler />
 
             <div className="menu-bar card rounded-0 card-articles p-1 justify-content-center">
 

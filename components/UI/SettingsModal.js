@@ -7,11 +7,15 @@ import { useStore } from "@/hooks/useStore";
 
 import B from "@articles-media/articles-gamepad-helper/dist/img/Xbox UI/B.svg";
 import { useModalNavigation } from "@/hooks/useModalNavigation";
+import { Article } from "@mui/icons-material";
 
 export default function SettingsModal({
     show,
     setShow,
 }) {
+
+    const audioSettings = useStore((state) => state?.audioSettings);
+    const setAudioSettings = useStore((state) => state?.setAudioSettings);
 
     const [showModal, setShowModal] = useState(true)
 
@@ -221,10 +225,48 @@ export default function SettingsModal({
                         }
                         {tab == 'Audio' &&
                             <>
-                                <Form.Label className="mb-0">Game Volume</Form.Label>
-                                <Form.Range />
-                                <Form.Label className="mb-0">Music Volume</Form.Label>
-                                <Form.Range />
+
+                                <div className="mb-3">
+                                    <ArticlesButton
+                                        active={!audioSettings?.enabled}
+                                        onClick={() => {
+                                            setAudioSettings({
+                                                ...audioSettings,
+                                                enabled: false,
+                                            })
+                                        }}
+                                    >
+                                        Off
+                                    </ArticlesButton>
+                                    <ArticlesButton
+                                        active={audioSettings?.enabled}
+                                        onClick={() => {
+                                            setAudioSettings({
+                                                ...audioSettings,
+                                                enabled: true,
+                                            })
+                                        }}
+                                    >
+                                        On
+                                    </ArticlesButton>
+                                </div>
+
+                                <Form.Label className="mb-0">Game Volume - {audioSettings?.soundEffectsVolume}</Form.Label>
+                                <Form.Range 
+                                    value={audioSettings?.soundEffectsVolume}
+                                    onChange={(e) => setAudioSettings({
+                                        ...audioSettings,
+                                        soundEffectsVolume: Number(e.target.value),
+                                    })}
+                                />
+                                <Form.Label className="mb-0">Music Volume - {audioSettings?.backgroundMusicVolume}</Form.Label>
+                                <Form.Range 
+                                    value={audioSettings?.backgroundMusicVolume}
+                                    onChange={(e) => setAudioSettings({
+                                        ...audioSettings,
+                                        backgroundMusicVolume: Number(e.target.value),
+                                    })}
+                                />
                             </>
                         }
                         {tab == 'Chat' &&

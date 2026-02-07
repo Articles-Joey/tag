@@ -1,6 +1,6 @@
 # Tag
 
-Avoid other players and collect as much objects as possible, if you become tagged then you must tag someone else before you can collect objects again.
+Multiplayer Peer-to-peer tag game built with React Three Fiber and Next.js. Run, hide, and tag your friends in a fun and dynamic 3D environment. Join the chase and see if you can avoid being 'it' in this fast-paced game of tag!
 
 ![Preview](public/img/preview.webp)
 
@@ -18,5 +18,6 @@ Multiplayer powered by WebRTC via PeerJS. Share your invite link or code once yo
 
 ## Attributions
 
-[Hand Graphic](https://www.flaticon.com/free-icon/hand_2775745)
-[Landing Background](https://www.freepik.com/free-vector/blank-nature-park-landscape-daytime-scene-with-pathway-through-meadow_14801733.htm)
+[Background music and sound effects](https://toontown.fandom.com/wiki/Music)  
+[Hand graphic](https://www.flaticon.com/free-icon/hand_2775745)  
+[Landing background](https://www.freepik.com/free-vector/blank-nature-park-landscape-daytime-scene-with-pathway-through-meadow_14801733.htm)  

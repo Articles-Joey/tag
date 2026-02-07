@@ -1,16 +1,20 @@
-import { useSphere } from "@react-three/cannon"
+import { useCompoundBody } from "@react-three/cannon"
 import { useFrame } from "@react-three/fiber"
 import SpacesuitModel from "../Models/Spacesuit"
 import { useRef } from "react"
 import { Text, Billboard } from "@react-three/drei"
 
 export default function RemotePlayer({ player }) {
-    const [ref, api] = useSphere(() => ({
+    const [ref, api] = useCompoundBody(() => ({
         mass: 1,
         type: 'Kinematic',
-        args: [0.3],
         position: player.position,
-        userData: { id: player.id, type: 'player' }
+        userData: { id: player.id, type: 'player' },
+        shapes: [
+            { type: 'Sphere', args: [0.3], position: [0, 0.15, 0] },
+            { type: 'Sphere', args: [0.3], position: [0, -0.15, 0] },
+            { type: 'Cylinder', args: [0.3, 0.3, 0.3, 8], position: [0, 0, 0] }
+        ]
     }))
 
     useFrame(() => {
@@ -23,7 +27,7 @@ export default function RemotePlayer({ player }) {
         <group ref={ref}>
             <SpacesuitModel
                 scale={0.5}
-                position={[0, -0.3, 0]}
+                position={[0, -0.45, 0]}
                 rotation={player.rotation ? [0, player.rotation, 0] : [0, 0, 0]}
                 action={player.action || "Idle"}
             />

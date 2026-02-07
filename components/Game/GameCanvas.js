@@ -51,6 +51,8 @@ import ItMarker from "./ItMarker";
 import Obstacles from "./Obstacles";
 import Barns from "./Barns";
 import { useStore } from "@/hooks/useStore";
+import HollowLog from "./HollowLog";
+import { degToRad } from "three/src/math/MathUtils";
 // import { useStore } from "@/hooks/useStore";
 
 function GameCanvas() {
@@ -166,6 +168,10 @@ function GameCanvas() {
                         <Player />
                     }
 
+                    <HollowLog 
+                        position={[10, 1.6, 0]}
+                    />
+
                     <Players />
 
                     <Obstacles />
@@ -176,8 +182,9 @@ function GameCanvas() {
 
                     {/* Center Dummy */}
                     <Duck
-                        position={[0, 0, -10]}
-                        rotation={[0, 0, 0]}
+                        // position={[0, 0, -10]}                        
+                        position={[10, 3.1, 0]}                
+                        rotation={[0, degToRad(-90), 0]}
                     />
 
                 </Debug>

@@ -45,6 +45,13 @@ export const useStore = create()(
       touchControlsEnabled: false,
       setTouchControlsEnabled: (value) => set({ touchControlsEnabled: value }),
 
+      audioSettings: {
+        enabled: true,
+        backgroundMusicVolume: 50,
+        soundEffectsVolume: 50,
+      },
+      setAudioSettings: (newValue) => set({ audioSettings: newValue }),
+
     }),
     {
       name: 'tag-game-storage', // name of the item in the storage (must be unique)
@@ -70,6 +77,7 @@ export const useStore = create()(
         // debug: state.debug,
         // devDebugPanel: state.devDebugPanel,
         // debugTab: state.debugTab,
+        audioSettings: state.audioSettings,
       }),
     },
   ),

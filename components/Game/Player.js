@@ -1,11 +1,12 @@
 import { useFrame, useThree } from "@react-three/fiber"
-import { useSphere } from "@react-three/cannon"
+import { useCompoundBody } from "@react-three/cannon"
 import { memo, useEffect, useRef, useState } from "react"
 import { Vector3 } from "three"
 import { useKeyboard } from "@/hooks/useKeyboard"
 
 import { useTagGameStore } from "@/hooks/useTagGameStore"
 import { usePeerStore } from "@/hooks/usePeerStore"
+import { useStore } from "@/hooks/useStore"
 // import Duck from "../Models/Duck"
 import SpacesuitModel from "../Models/Spacesuit"
 import { degToRad } from "three/src/math/MathUtils"
@@ -22,6 +23,75 @@ function PlayerBase() {
     const [action, setAction] = useState("Idle")
     const [speed, setSpeed] = useState(1)
     const [isJumping, setIsJumping] = useState(false)
+
+    const audioSettings = useStore((state) => state.audioSettings)
+    const itPlayerId = usePeerStore(state => state.gameState?.itPlayerId)
+    const peer = usePeerStore(state => state.peer)
+
+    const walkAudio = useRef(typeof Audio !== "undefined" ? new Audio("/audio/walk.ogg") : null)
+    const runAudio = useRef(typeof Audio !== "undefined" ? new Audio("/audio/run.ogg") : null)
+    const tagAudio = useRef(typeof Audio !== "undefined" ? new Audio("/audio/tag.ogg") : null)
+
+    const prevItPlayerId = useRef(null)
+
+    useEffect(() => {
+        if(walkAudio.current) walkAudio.current.loop = true
+        if(runAudio.current) runAudio.current.loop = true
+        
+        return () => {
+             walkAudio.current?.pause();
+             runAudio.current?.pause();
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!audioSettings?.enabled) return;
+
+        const volume = audioSettings.soundEffectsVolume !== undefined ? (audioSettings.soundEffectsVolume / 100) : 0.5;
+        
+        if(walkAudio.current) walkAudio.current.volume = volume;
+        if(runAudio.current) runAudio.current.volume = volume;
+        if(tagAudio.current) tagAudio.current.volume = volume;
+    }, [audioSettings?.soundEffectsVolume, audioSettings?.enabled])
+
+    useEffect(() => {
+        if (!audioSettings?.enabled) {
+             walkAudio.current?.pause();
+             runAudio.current?.pause();
+             return;
+        }
+
+        // Mute if jumping
+        if (isJumping) {
+            walkAudio.current?.pause();
+            runAudio.current?.pause();
+            return;
+        }
+
+        if (action === "Walk") {
+             runAudio.current?.pause();
+             if (walkAudio.current?.paused) walkAudio.current.play().catch(()=>{});
+        } else if (action === "Run") {
+             walkAudio.current?.pause();
+             if (runAudio.current?.paused) runAudio.current.play().catch(()=>{});
+        } else {
+             walkAudio.current?.pause();
+             runAudio.current?.pause();
+        }
+    }, [action, isJumping, audioSettings?.enabled])
+
+    // Detect being tagged
+    useEffect(() => {
+        if (!audioSettings?.enabled) return;
+        
+        if (itPlayerId && peer?.id && itPlayerId === peer.id && prevItPlayerId.current !== itPlayerId) {
+             // We just became IT
+             tagAudio.current.currentTime = 0;
+             tagAudio.current.play().catch(()=>{});
+        }
+        prevItPlayerId.current = itPlayerId;
+
+    }, [itPlayerId, peer?.id, audioSettings?.enabled])
     
     // Controller specific refs
     const prevToggleView = useRef(false);
@@ -65,7 +135,7 @@ function PlayerBase() {
     // Track how many frames we've been "still" vertically to detect ground vs apex
     const groundedFrames = useRef(0)
 
-    const [ref, api] = useSphere(() => {
+    const [ref, api] = useCompoundBody(() => {
         // Recover last known position from store if available to prevent reset on re-render
         const lastPos = useTagGameStore.getState().position;
         // If lastPos is [0,0,0] (default store state), use spawn point [0,1,0]
@@ -76,11 +146,15 @@ function PlayerBase() {
 
         return {
             mass: 1,
-            args: [0.3],
             type: 'Dynamic',
             position: spawnPos,
             fixedRotation: true,
             angularDamping: 1,
+            shapes: [
+                { type: 'Sphere', args: [0.3], position: [0, 0.15, 0] },
+                { type: 'Sphere', args: [0.3], position: [0, -0.15, 0] },
+                { type: 'Cylinder', args: [0.3, 0.3, 0.3, 8], position: [0, 0, 0] }
+            ]
         }
     })
 
@@ -130,6 +204,10 @@ function PlayerBase() {
 
     const sprintEnergy = useRef(5)
     const lastSprintTime = useRef(0)
+    const lastJumpTime = useRef(0)
+    const lastForwardPressTime = useRef(0)
+    const isDoubleTapSprinting = useRef(false)
+    const wasMovingForward = useRef(false)
 
     useFrame((state, delta) => {
 
@@ -155,7 +233,7 @@ function PlayerBase() {
             camera.position.copy(
                 new Vector3(
                     pos.current[0],
-                    (pos.current[1] / (crouch ? 2 : 1)) + 1, // Adjust height for crouch, +2 units higher default
+                    (pos.current[1] / (crouch ? 2 : 1)) + 0.4, // Adjust height for crouch, +2 units higher default
                     pos.current[2]
                 )
             );
@@ -171,7 +249,17 @@ function PlayerBase() {
 
         let forwardInput = (moveBackward ? 1 : 0) - (moveForward ? 1 : 0);
         let sideInput = (moveLeft ? 1 : 0) - (moveRight ? 1 : 0);
-        let isSprintingInput = shift;
+
+        if (moveForward && !wasMovingForward.current) {
+            if (Date.now() - lastForwardPressTime.current < 300) {
+                isDoubleTapSprinting.current = true;
+            }
+            lastForwardPressTime.current = Date.now();
+        }
+        if (!moveForward) isDoubleTapSprinting.current = false;
+        wasMovingForward.current = moveForward;
+
+        let isSprintingInput = shift || isDoubleTapSprinting.current;
         let isJumpingInput = jump;
         
         let rotationX = 0;
@@ -295,8 +383,15 @@ function PlayerBase() {
             groundedFrames.current = 0
         }
 
+        // Handle Landing
+        if (isJumping && groundedFrames.current > 4 && Date.now() - lastJumpTime.current > 500) {
+            setIsJumping(false)
+            setSpeed(1)
+        }
+
         // Jump if grounded for at least 3 frames (avoids apex jumping)
-        if (isJumpingInput && groundedFrames.current > 2) {
+        // !isJumping check to prevent double jump logic
+        if (isJumpingInput && groundedFrames.current > 2 && !isJumping) {
             api.velocity.set(vel.current[0], JUMP_FORCE, vel.current[2])
             groundedFrames.current = 0
 
@@ -304,11 +399,7 @@ function PlayerBase() {
             setIsJumping(true)
             setAction("Run")
             setSpeed(3)
-            
-            setTimeout(() => {
-                setIsJumping(false)
-                setSpeed(1)
-            }, 800)
+            lastJumpTime.current = Date.now()
         }
 
         if (modelRef.current) {
@@ -320,13 +411,13 @@ function PlayerBase() {
     return (
         <>
             <mesh ref={ref} />
-            <group ref={modelRef}>
+            <group ref={modelRef} visible={isThirdPerson}>
 
                 {/* <Duck /> */}
 
                 <SpacesuitModel
                     scale={0.5}
-                    position={[0, -0.3, 0]}
+                    position={[0, -0.45, 0]}
                     action={action}
                     speed={speed}
                 />
