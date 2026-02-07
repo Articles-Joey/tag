@@ -46,6 +46,7 @@ import { memo } from "react";
 import BotPlayer from "./BotPlayer";
 import Trees from "./Trees";
 import Grass from "./Grass";
+import Players from "./Players";
 
 function GameCanvas(props) {
 
@@ -142,6 +143,8 @@ function GameCanvas(props) {
                     {controlType == "Mouse and Keyboard" &&
                         <Player />
                     }
+
+                    <Players />
     
                     <BotPlayer />
     
@@ -150,8 +153,8 @@ function GameCanvas(props) {
                         position={[0, 0, -10]}
                         rotation={[0, 0, 0]}
                     />
-                </Debug
-               >
+
+                </Debug>
 
             </Physics>
 

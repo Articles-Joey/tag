@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@articles-media/articles-dev-box": "^1.0.15",
+    "@articles-media/articles-gamepad-helper": "^0.0.8",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.6",
@@ -25,6 +27,7 @@
     "date-fns": "^4.1.0",
     "next": "^16.1.6",
     "nipplejs": "^0.10.2",
+    "peerjs": "^1.5.5",
     "react": "^19.2.4",
     "react-bootstrap": "^2.10.10",
     "react-countdown": "^2.3.6",

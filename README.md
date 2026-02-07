@@ -14,4 +14,9 @@ npm run dev
 
 ## Multiplayer
 
-Aiming to have multiplayer via P2P and Websockets. Websocket backend code is not in this repo or available at this time. P2P code will be included here.
+Multiplayer powered by WebRTC via PeerJS. Share your invite link or code once you are in a game.
+
+## Attributions
+
+[Hand Graphic](https://www.flaticon.com/free-icon/hand_2775745)
+[Landing Background](https://www.freepik.com/free-vector/blank-nature-park-landscape-daytime-scene-with-pathway-through-meadow_14801733.htm)

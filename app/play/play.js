@@ -22,6 +22,9 @@ import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
 import LeftPanelContent from '@/components/UI/LeftPanel';
 import { useSocketStore } from '@/hooks/useSocketStore';
 import SprintMeter from '@/components/UI/SprintMeter';
+import { useKeyboard } from "@/hooks/useKeyboard";
+import { usePeerStore } from '@/hooks/usePeerStore';
+import { useTagGameStore } from '@/hooks/useTagGameStore';
 
 const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
     ssr: false,
@@ -48,37 +51,158 @@ export default function TagGamePage() {
 
     const [players, setPlayers] = useState([])
 
-    useEffect(() => {
+    // PeerJS Refs
+    const connectionsRef = useRef({});
 
-        if (server && socket.connected) {
-            socket.emit('join-room', `game:tag-game-room-${server}`, {
-                game_id: server,
-                nickname: JSON.parse(localStorage.getItem('game:nickname')),
-                client_version: '1',
-            });
-        }
-
-        // return function cleanup() {
-        //     socket.emit('leave-room', 'game:glass-ceiling-landing')
-        // };
-
-    }, [server, socket.connected]);
+    const peer = usePeerStore(state => state.peer)
+    const setPeer = usePeerStore(state => state.setPeer)
+    const isHost = usePeerStore(state => state.isHost)
+    const setIsHost = usePeerStore(state => state.setIsHost)
+    const gameState = usePeerStore(state => state.gameState)
+    const setGameState = usePeerStore(state => state.setGameState)
 
     useEffect(() => {
 
-        if (server) {
-            socket.on(`game:tag-room-${server}`, function (msg) {
-                console.log(`game:tag-room-${server}`, msg)
-                // setPlayers(msg.players)
-                // setLobbyDetails(msg)
-            });
+        if (!server && !peer) {
+            const initHost = async () => {
+                const { default: Peer } = await import('peerjs');
+                // Generate 4 character random ID
+                const id = Math.random().toString(36).substring(2, 6).toUpperCase();
+                const newPeer = new Peer(id);
+
+                newPeer.on('open', (id) => {
+                    console.log('Host ID: ' + id);
+                    if (!peer) { // Double check to avoid race conditions
+                        setPeer(newPeer);
+                        setIsHost(true);
+                    }
+                });
+
+                newPeer.on('connection', (conn) => {
+                    conn.on('open', () => {
+                        console.log('Client connected: ' + conn.peer);
+                        connectionsRef.current[conn.peer] = conn;
+                    });
+                    conn.on('data', (data) => {
+                        if (data.type === 'position') {
+                            setGameState(prev => {
+                                const players = [...(prev.players || [])];
+                                const index = players.findIndex(p => p.id === conn.peer);
+                                if (index > -1) {
+                                    players[index] = { ...players[index], position: data.position };
+                                } else {
+                                    players.push({ id: conn.peer, position: data.position });
+                                }
+                                return { ...prev, players };
+                            });
+                        }
+                    });
+                    conn.on('close', () => {
+                        console.log('Client disconnected: ' + conn.peer);
+                        delete connectionsRef.current[conn.peer];
+                        setGameState(prev => ({
+                            ...prev,
+                            players: (prev.players || []).filter(p => p.id !== conn.peer)
+                        }));
+                    });
+                });
+
+                newPeer.on('error', (err) => {
+                    console.error('PeerJS Host error:', err);
+                });
+            };
+            initHost();
         }
 
-        return function cleanup() {
-            socket.emit('leave-room', `game:tag-game-room-${server}`)
-        };
+        if (server && !peer) {
+            const initClient = async () => {
+                const { default: Peer } = await import('peerjs');
+                const id = Math.random().toString(36).substring(2, 6).toUpperCase();
+                const newPeer = new Peer(id);
 
-    }, []);
+                newPeer.on('open', (id) => {
+                    console.log('Client ID: ' + id);
+                    if (!peer) {
+                        setPeer(newPeer);
+                        setIsHost(false);
+                        
+                        const conn = newPeer.connect(server);
+                        conn.on('open', () => {
+                            console.log('Connected to Host');
+                            connectionsRef.current['host'] = conn;
+                        });
+                        conn.on('data', (data) => {
+                            if (data.type === 'gameState') {
+                                setGameState(data.state);
+                            }
+                        });
+                        conn.on('close', () => console.log('Disconnected from Host'));
+                        conn.on('error', err => console.error('Connection Error:', err));
+                    }
+                });
+                
+                newPeer.on('error', err => console.error('PeerJS Client Error:', err));
+            };
+            initClient();
+        }
+
+    }, [server, peer, setPeer, setIsHost, setGameState]);
+
+    // Network Loop
+    useEffect(() => {
+        if (!peer) return;
+
+        const interval = setInterval(() => {
+            const myPosition = useTagGameStore.getState().position;
+            const myId = peer.id;
+
+            if (isHost) {
+                // Host: Update self and broadcast
+                const currentState = usePeerStore.getState().gameState;
+                const players = [...(currentState.players || [])];
+                const index = players.findIndex(p => p.id === myId);
+                const newPlayer = { id: myId, position: myPosition };
+                
+                if (index > -1) {
+                    players[index] = newPlayer;
+                } else {
+                    players.push(newPlayer);
+                }
+                
+                const newState = { ...currentState, players };
+                
+                setGameState(newState);
+                
+                // Broadcast
+                Object.values(connectionsRef.current).forEach(conn => {
+                    if (conn.open) {
+                        conn.send({ type: 'gameState', state: newState });
+                    }
+                });
+            } else {
+                // Client: Send position to host
+                const hostConn = connectionsRef.current['host'];
+                if (hostConn && hostConn.open) {
+                    hostConn.send({ type: 'position', position: myPosition });
+                }
+            }
+        }, 50);
+
+        return () => clearInterval(interval);
+    }, [peer, isHost, setGameState]);
+    //     if (server) {
+    //         socket.on(`game:tag-room-${server}`, function (msg) {
+    //             console.log(`game:tag-room-${server}`, msg)
+    //             // setPlayers(msg.players)
+    //             // setLobbyDetails(msg)
+    //         });
+    //     }
+
+    //     return function cleanup() {
+    //         socket.emit('leave-room', `game:tag-game-room-${server}`)
+    //     };
+
+    // }, []);
 
     const [showMenu, setShowMenu] = useState(false)
 
@@ -86,12 +210,19 @@ export default function TagGamePage() {
 
     const [sceneKey, setSceneKey] = useState(0);
 
-    const [gameState, setGameState] = useState(false)
+    // const [gameState, setGameState] = useState(false)
 
     // Function to handle scene reload
     const reloadScene = () => {
         setSceneKey((prevKey) => prevKey + 1);
     };
+
+    const { reload } = useKeyboard()
+    useEffect(() => {
+        if (reload) {
+            reloadScene();
+        }
+    }, [reload])
 
     const { isFullscreen, requestFullscreen, exitFullscreen } = useFullscreen();
 

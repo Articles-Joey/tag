@@ -1,4 +1,5 @@
 // import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from 'react';
 
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { ThemeProvider } from '@mui/material/styles';
@@ -9,7 +10,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 // import "./globals.css";
 import "@/styles/index.scss";
-import SocketLogicHandler from "@/components/SocketLogicHandler";
+
+// import SocketLogicHandler from "@/components/SocketLogicHandler";
+import DarkModeHandler from '@/components/UI/DarkModeHandler';
+import GlobalClientModals from '@/components/UI/GlobalClientModals';
+import LayoutClient from './layout-client';
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -32,10 +37,14 @@ export default function RootLayout({ children }) {
 
       <head>
 
-        <link
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
+        <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet"></link>
+
+        {/* <link
           rel="stylesheet"
           href={`${process.env.NEXT_PUBLIC_CDN}fonts/fontawsome/css/all.min.css`}
-        />
+        /> */}
 
       </head>
 
@@ -43,7 +52,12 @@ export default function RootLayout({ children }) {
       // className={`${geistSans.variable} ${geistMono.variable}`}
       >
 
-        <SocketLogicHandler />
+        <Suspense>
+          {/* <SocketLogicHandler /> */}
+          <LayoutClient />
+          <DarkModeHandler />
+          <GlobalClientModals />
+        </Suspense>
 
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>

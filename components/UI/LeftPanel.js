@@ -10,8 +10,19 @@ import ControllerPreview from "@/components/ControllerPreview";
 import { useSocketStore } from "@/hooks/useSocketStore";
 // import { useState } from "react";
 import { useTagGameStore } from "@/hooks/useTagGameStore";
+import { useStore } from "@/hooks/useStore";
+import PeerDetails from "./PeerDetails";
 
 export default function LeftPanelContent(props) {
+
+    // const showInfoModal = useStore((state) => state.showInfoModal);
+    // const setShowInfoModal = useStore((state) => state.setShowInfoModal);
+    // const showSettingsModal = useStore((state) => state.showSettingsModal);
+    const setShowSettingsModal = useStore((state) => state.setShowSettingsModal);
+    // const showPrivateGameModal = useStore((state) => state.showPrivateGameModal);
+    // const setShowPrivateGameModal = useStore((state) => state.setShowPrivateGameModal);
+    const darkMode = useStore((state) => state.darkMode);
+    const toggleDarkMode = useStore((state) => state.toggleDarkMode);
 
     // return ('Test')
 
@@ -63,19 +74,17 @@ export default function LeftPanelContent(props) {
 
                 <div className="card-body">
 
-                    <div className='flex-header'>
+                    {/* <div className='flex-header'>
                         <div>Server: {server}</div>
                         <div>Players: {0}/4</div>
-                    </div>
+                    </div> */}
 
-                    {!socket?.connected &&
+                    {/* {!socket?.connected &&
                         <div
                             className=""
                         >
 
                             <div className="">
-
-                                {/* <div className="h6 mb-1">Not connected</div> */}
 
                                 <ArticlesButton
                                     className="w-100 mb-2"
@@ -92,37 +101,77 @@ export default function LeftPanelContent(props) {
                             </div>
 
                         </div>
-                    }
+                    } */}
 
-                    <Link
-                        href={'/'}
-                        className=""
-                    >
-                        <ArticlesButton
-                            className='w-50'
-                            small
+                    <div className="d-flex flex-wrap">
+
+                        <Link
+                            href={'/'}
+                            className="w-50"
                         >
-                            <i className="fad fa-arrow-alt-square-left"></i>
-                            <span>Leave Game</span>
-                        </ArticlesButton>
-                    </Link>
+                            <ArticlesButton
+                                className='w-100'
+                                small
+                            >
+                                <i className="fad fa-arrow-alt-square-left"></i>
+                                <span>Leave Game</span>
+                            </ArticlesButton>
+                        </Link>
 
-                    <ArticlesButton
-                        small
-                        className="w-50"
-                        active={isFullscreen}
-                        onClick={() => {
-                            if (isFullscreen) {
-                                exitFullscreen()
-                            } else {
-                                requestFullscreen('tag-game-page')
-                            }
-                        }}
-                    >
-                        {isFullscreen && <span>Exit </span>}
-                        {!isFullscreen && <span><i className='fad fa-expand'></i></span>}
-                        <span>Fullscreen</span>
-                    </ArticlesButton>
+                        <ArticlesButton
+                            small
+                            className="w-50"
+                            active={isFullscreen}
+                            onClick={() => {
+                                if (isFullscreen) {
+                                    exitFullscreen()
+                                } else {
+                                    requestFullscreen('tag-game-page')
+                                }
+                            }}
+                        >
+                            {isFullscreen && <span>Exit </span>}
+                            {!isFullscreen && <span><i className='fad fa-expand'></i></span>}
+                            <span>Fullscreen</span>
+                        </ArticlesButton>
+
+                        <div
+                            className="d-flex w-50"
+                        >
+                            <ArticlesButton
+                                small
+                                className="w-100"
+                                active={isFullscreen}
+                                onClick={() => {
+                                    setShowSettingsModal(true)
+                                }}
+                            >
+                                <i className="fad fa-cog"></i>
+                                <span>Settings</span>
+                            </ArticlesButton>
+                            <ArticlesButton
+                                small
+                                className=""
+                                active={darkMode}
+                                onClick={() => {
+                                    toggleDarkMode()
+                                }}
+                            >
+                                <i className="fad fa-sun"></i>
+                            </ArticlesButton>
+                        </div>
+
+                        <ArticlesButton
+                            small
+                            className="w-50"
+                            onClick={() => {
+
+                            }}
+                        >
+                            <i className="fad fa-chevron-square-right"></i>
+                            Sidebar
+                        </ArticlesButton>
+                    </div>
 
                 </div>
             </div>
@@ -148,7 +197,7 @@ export default function LeftPanelContent(props) {
             </div>
 
             {/* Camera Controls */}
-            <div
+            {/* <div
                 className="card card-articles card-sm"
             >
                 <div className="card-body">
@@ -162,9 +211,6 @@ export default function LeftPanelContent(props) {
                                 size="sm"
                                 className="w-50"
                                 active={controlType == "Player"}
-                            // onClick={() => {
-                            //     setTouchControlsEnabled(false)
-                            // }}
                             >
                                 <i className="fad fa-redo"></i>
                                 Player
@@ -173,10 +219,6 @@ export default function LeftPanelContent(props) {
                             <ArticlesButton
                                 size="sm"
                                 className="w-50"
-                            // active={touchControlsEnabled}
-                            // onClick={() => {
-                            //     setTouchControlsEnabled(true)
-                            // }}
                             >
                                 <i className="fad fa-redo"></i>
                                 Free Cam
@@ -186,7 +228,10 @@ export default function LeftPanelContent(props) {
                     </div>
 
                 </div>
-            </div>
+            </div> */}
+
+            {/* Peer Details */}
+            <PeerDetails />
 
             {/* Touch Controls */}
             <div
