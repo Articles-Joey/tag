@@ -10,7 +10,7 @@ export default function SprintMeter() {
     return (
         <div style={{
             position: 'absolute',
-            bottom: '20px',
+            bottom: '15px',
             left: '50%',
             transform: 'translateX(-50%)',
             width: '200px',

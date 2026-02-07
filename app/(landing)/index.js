@@ -1,180 +1,128 @@
 "use client"
-import { useEffect, useContext, useState } from 'react';
+import { useEffect, useContext, useState, Suspense } from 'react';
 
-import Image from 'next/image'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
-// import { useSelector, useDispatch } from 'react-redux'
-
-// import ROUTES from 'components/constants/routes'
-
-// const Ad = dynamic(() => import('components/Ads/Ad'), {
-//     ssr: false,
-// });
-
 import ArticlesButton from '@/components/UI/Button';
 import { useStore } from '@/hooks/useStore';
-// import SingleInput from '@/components/Articles/SingleInput';
-// import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
-// import IsDev from '@/components/UI/IsDev';
-// import { useSocketStore } from '@/hooks/useSocketStore';
-// import { useStore } from 'zustand';
 
-// const InfoModal = dynamic(
-//     () => import('@/components/UI/InfoModal'),
-//     { ssr: false }
-// )
+import GameScoreboard from '@articles-media/articles-dev-box/GameScoreboard';
+import Ad from '@articles-media/articles-dev-box/Ad';
+const ReturnToLauncherButton = dynamic(() =>
+    import('@articles-media/articles-dev-box/ReturnToLauncherButton'),
+    { ssr: false }
+);
+import { GamepadKeyboard, PieMenu } from '@articles-media/articles-gamepad-helper';
 
-// const SettingsModal = dynamic(
-//     () => import('@/components/UI/SettingsModal'),
-//     { ssr: false }
-// )
-
-// const PrivateGameModal = dynamic(
-//     () => import('app/(site)/community/games/four-frogs/components/PrivateGameModal'),
-//     { ssr: false }
-// )
+import useUserDetails from '@articles-media/articles-dev-box/useUserDetails';
+import useUserToken from '@articles-media/articles-dev-box/useUserToken';
 
 const game_key = 'tag'
 const game_name = 'Tag'
 
 export default function TagGameLandingPage() {
 
-    // const {
-    //     socket,
-    // } = useSocketStore(state => ({
-    //     socket: state.socket,
-    // }));
-
-    // const userReduxState = useSelector((state) => state.auth.user_details)
-    // const userReduxState = false
-
     const darkMode = useStore((state) => state.darkMode);
     const toggleDarkMode = useStore((state) => state.toggleDarkMode);
     const nickname = useStore((state) => state.nickname);
     const setNickname = useStore((state) => state.setNickname);
-    // const showInfoModal = useStore((state) => state.showInfoModal);
     const setShowInfoModal = useStore((state) => state.setShowInfoModal);
-    // const showSettingsModal = useStore((state) => state.showSettingsModal);
     const setShowSettingsModal = useStore((state) => state.setShowSettingsModal);
-    // const showPrivateGameModal = useStore((state) => state.showPrivateGameModal);
-    // const setShowPrivateGameModal = useStore((state) => state.setShowPrivateGameModal);
     const setShowCreditsModal = useStore((state) => state.setShowCreditsModal);
 
-    // const [nickname, setNickname] = useLocalStorageNew("game:nickname", userReduxState.display_name)
-
-    // const [showInfoModal, setShowInfoModal] = useState(false)
-    // const [showSettingsModal, setShowSettingsModal] = useState(false)
-    // const [showPrivateGameModal, setShowPrivateGameModal] = useState(false)
-
     const [joinGame, setJoinGame] = useState(false)
-
     const [isMounted, setIsMounted] = useState(false)
-    // const [joinAttempted, setJoinAttempted] = useState(false)
-
-    // const [lobbyDetails, setLobbyDetails] = useState({
-    //     players: [],
-    //     games: [],
-    // })
-
-    // useEffect(() => {
-
-    //     if (socket) {
-    //         socket.emit('join-room', 'four-frogs');
-    //     }
-
-    //     return () => {
-    //         if (socket) {
-    //             socket.emit('leave-room', 'four-frogs');
-    //         }
-    //     }
-
-    // }, [socket]);
 
     useEffect(() => {
 
         setIsMounted(true)
 
-        // setShowInfoModal(localStorage.getItem('game:four-frogs:rulesAnControls') === 'true' ? true : false)
-
-        //  if (joinAttempted) {
-        //     return
-        // }
-
-        // console.log("joinAttempted", joinAttempted)
-
-        // setJoinAttempted(true)
-
-        // socket.on('game:tag-landing-details', function (msg) {
-        //     console.log('game:tag-landing-details', msg)
-
-        //     // if (JSON.stringify(msg) !== JSON.stringify(lobbyDetails)) {
-        //     setLobbyDetails(msg)
-        //     // }
-        // });
-
-        // return () => {
-        //     socket.off('game:tag-landing-details');
-        // };
-
     }, [])
 
-    // useEffect(() => {
+    const {
+        data: userToken,
+        error: userTokenError,
+        isLoading: userTokenLoading,
+        mutate: userTokenMutate
+    } = useUserToken(
+        "3034"
+    );
 
-    //     if (!isMounted) return
-
-    //     console.log("isMounted")        
-
-    // }, [isMounted])
-
-    // useEffect(() => {
-
-    //     localStorage.setItem('game:four-frogs:rulesAnControls', showInfoModal)
-
-    // }, [showInfoModal])
-
-    // useEffect(() => {
-
-    //     if (!isMounted || joinAttempted) return
-
-    //     console.log("TEST 123")
-
-    //     if (socket.connected) {
-    //         setJoinAttempted(true)
-    //         socket.emit('join-room', 'game:tag-landing');
-    //     }
-
-    //     return function cleanup() {
-    //         socket.emit('leave-room', 'game:tag-landing')
-    //     };
-
-    // }, [socket.connected, isMounted]);
+    const {
+        data: userDetails,
+        error: userDetailsError,
+        isLoading: userDetailsLoading,
+        mutate: userDetailsMutate
+    } = useUserDetails({
+        token: userToken
+    });
 
     return (
 
         <div className="tag-lobby-page">
 
-            {/* {showInfoModal &&
-                <InfoModal
-                    show={showInfoModal}
-                    setShow={setShowInfoModal}
+            <Suspense>
+                {/* <GamepadKeyboard
+                    disableToggle={true}
+                    active={nicknameKeyboard}
+                    onFinish={(text) => {
+                        console.log("FINISH KEYBOARD", text)
+                        useStore.getState().setNickname(text);
+                        useStore.getState().setNicknameKeyboard(false);
+                    }}
+                    onCancel={(text) => {
+                        console.log("CANCEL KEYBOARD", text)
+                        // useStore.getState().setNickname(text);
+                        useStore.getState().setNicknameKeyboard(false);
+                    }}
+                /> */}
+                <PieMenu
+                    options={[
+                        {
+                            label: 'Settings',
+                            icon: 'fad fa-cog',
+                            callback: () => {
+                                setShowSettingsModal(prev => !prev)
+                            }
+                        },
+                        {
+                            label: 'Go Back',
+                            icon: 'fad fa-arrow-left',
+                            callback: () => {
+                                window.history.back()
+                            }
+                        },
+                        {
+                            label: 'Credits',
+                            icon: 'fad fa-info-circle',
+                            callback: () => {
+                                setShowCreditsModal(true)
+                            }
+                        },
+                        {
+                            label: 'Game Launcher',
+                            icon: 'fad fa-gamepad',
+                            callback: () => {
+                                window.location.href = 'https://games.articles.media';
+                            }
+                        },
+                        {
+                            label: `${darkMode ? "Light" : "Dark"} Mode`,
+                            icon: 'fad fa-palette',
+                            callback: () => {
+                                toggleDarkMode()
+                            }
+                        }
+                    ]}
+                    onFinish={(event) => {
+                        console.log("Event", event)
+                        if (event.callback) {
+                            event.callback()
+                        }
+                    }}
                 />
-            }
-
-            {showSettingsModal &&
-                <SettingsModal
-                    show={showSettingsModal}
-                    setShow={setShowSettingsModal}
-                />
-            }
-
-            {showPrivateGameModal &&
-                <PrivateGameModal
-                    show={showPrivateGameModal}
-                    setShow={setShowPrivateGameModal}
-                />
-            } */}
+            </Suspense>
 
             <div className='background-wrap'>
                 <img
@@ -217,7 +165,7 @@ export default function TagGameLandingPage() {
                         />
                     </div>
 
-                    <div className="card card-articles mb-3 mb-lg-0" >
+                    <div className="card card-articles mb-3" >
 
                         <div className="card-header">
 
@@ -395,9 +343,25 @@ export default function TagGameLandingPage() {
 
                     </div>
 
+                    <ReturnToLauncherButton />
+
                 </div>
 
-                {/* <Ad section={"Games"} section_id={game_name} /> */}
+                <GameScoreboard
+                    game={game_name}
+                    style="Default"
+                    darkMode={darkMode ? true : false}
+                />
+
+                <Ad
+                    style="Default"
+                    section={"Games"}
+                    section_id={game_name}
+                    darkMode={darkMode ? true : false}
+                    user_ad_token={userToken}
+                    userDetails={userDetails}
+                    userDetailsLoading={userDetailsLoading}
+                />
 
             </div>
 

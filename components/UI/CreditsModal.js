@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Modal } from "react-bootstrap"
 
 import ArticlesButton from "./Button";
+
+import B from "@articles-media/articles-gamepad-helper/dist/img/Xbox UI/B.svg";
+import { useModalNavigation } from "@/hooks/useModalNavigation";
 
 export default function CreditsModal({
     show,
@@ -10,6 +13,9 @@ export default function CreditsModal({
 }) {
 
     const [showModal, setShowModal] = useState(true)
+
+    const elementsRef = useRef([]);
+    useModalNavigation(elementsRef, () => setShowModal(false));
 
     return (
         <>
@@ -29,7 +35,7 @@ export default function CreditsModal({
             >
 
                 <Modal.Header closeButton>
-                    <Modal.Title>Four Frogs Game Credits</Modal.Title>
+                    <Modal.Title>Game Credits</Modal.Title>
                 </Modal.Header>
 
                 <Modal.Body className="flex-column p-3">
@@ -43,7 +49,7 @@ export default function CreditsModal({
 
                     <div>Attributions:</div>
                     <a
-                        href="https://github.com/Articles-Joey/four-frogs/blob/main/README.md"
+                        href="https://github.com/Articles-Joey/tag/blob/main/README.md"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
@@ -63,6 +69,7 @@ export default function CreditsModal({
                     <ArticlesButton variant="outline-dark" onClick={() => {
                         setShow(false)
                     }}>
+                        <img src={B.src} className="me-1" alt="Close" />
                         Close
                     </ArticlesButton>
 

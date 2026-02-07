@@ -13,25 +13,16 @@ import { useTagGameStore } from "@/hooks/useTagGameStore";
 import { useStore } from "@/hooks/useStore";
 import PeerDetails from "./PeerDetails";
 import useFullscreen from "@/hooks/useFullScreen";
+import { set } from "date-fns";
+import TouchControlsPanel from "./TouchControlsPanel";
 
 export default function LeftPanelContent(props) {
-
-    // const showInfoModal = useStore((state) => state.showInfoModal);
-    // const setShowInfoModal = useStore((state) => state.setShowInfoModal);
-    // const showSettingsModal = useStore((state) => state.showSettingsModal);
-    const setShowSettingsModal = useStore((state) => state.setShowSettingsModal);
-    // const showPrivateGameModal = useStore((state) => state.showPrivateGameModal);
-    // const setShowPrivateGameModal = useStore((state) => state.setShowPrivateGameModal);
-    const darkMode = useStore((state) => state.darkMode);
-    const toggleDarkMode = useStore((state) => state.toggleDarkMode);
-
-    // return ('Test')
 
     const { isFullscreen, requestFullscreen, exitFullscreen } = useFullscreen();
 
     const {
         kickPlayer,
-        server,
+        // server,
         // players,
         touchControlsEnabled,
         setTouchControlsEnabled,
@@ -40,24 +31,13 @@ export default function LeftPanelContent(props) {
         // isFullscreen,
         // requestFullscreen,
         // exitFullscreen,
-        setShowMenu
+        // setShowMenu
     } = props;
 
-    // const {
-    //     position,
-    //     controlType,
-    //     setControlType,
-    //     tagCounter,
-    //     debug,
-    //     setDebug
-    // } = useTagGameStore(state => ({
-    //     position: state.position,
-    //     controlType: state.controlType,
-    //     setControlType: state.setControlType,
-    //     tagCounter: state.tagCounter,
-    //     debug: state.debug,
-    //     setDebug: state.setDebug
-    // }));
+    const setShowSettingsModal = useStore((state) => state.setShowSettingsModal);
+    const setShowMenu = useStore(state => state.setShowMenu);
+    const darkMode = useStore((state) => state.darkMode);
+    const toggleDarkMode = useStore((state) => state.toggleDarkMode);
 
     const sidebar = useStore(state => state.sidebar);
     const toggleSidebar = useStore(state => state.toggleSidebar);
@@ -152,7 +132,7 @@ export default function LeftPanelContent(props) {
                         >
                             <ArticlesButton
                                 small
-                                className="w-100"                                
+                                className="w-100"
                                 onClick={() => {
                                     setShowSettingsModal(true)
                                 }}
@@ -178,6 +158,7 @@ export default function LeftPanelContent(props) {
                             active={sidebar}
                             onClick={() => {
                                 toggleSidebar()
+                                setShowMenu(false)
                             }}
                         >
                             <i className="fad fa-chevron-square-right"></i>
@@ -246,45 +227,7 @@ export default function LeftPanelContent(props) {
             <PeerDetails kickPlayer={kickPlayer} />
 
             {/* Touch Controls */}
-            <div
-                className="card card-articles card-sm"
-            >
-                <div className="card-body">
-
-                    <div className="small text-muted">Touch Controls</div>
-
-                    <div className='d-flex flex-column'>
-
-                        <div>
-                            <ArticlesButton
-                                size="sm"
-                                className="w-50"
-                                active={!touchControlsEnabled}
-                                onClick={() => {
-                                    setTouchControlsEnabled(false)
-                                }}
-                            >
-                                <i className="fad fa-redo"></i>
-                                Off
-                            </ArticlesButton>
-
-                            <ArticlesButton
-                                size="sm"
-                                className="w-50"
-                                active={touchControlsEnabled}
-                                onClick={() => {
-                                    setTouchControlsEnabled(true)
-                                }}
-                            >
-                                <i className="fad fa-redo"></i>
-                                On
-                            </ArticlesButton>
-                        </div>
-
-                    </div>
-
-                </div>
-            </div>
+            <TouchControlsPanel />
 
             {/* Debug Controls */}
             <div

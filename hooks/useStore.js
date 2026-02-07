@@ -23,6 +23,10 @@ export const useStore = create()(
       setSidebar: (value) => set({ sidebar: value }),
       toggleSidebar: () => set({ sidebar: !get().sidebar }),
 
+      showMenu: false,
+      setShowMenu: (value) => set({ showMenu: value }),
+      toggleShowMenu: () => set({ showMenu: !get().showMenu }),
+
       showCreditsModal: false,
       setShowCreditsModal: (value) => set({ showCreditsModal: value }),
 
@@ -38,6 +42,9 @@ export const useStore = create()(
       graphicsQuality: "High",
       setGraphicsQuality: (value) => set({ graphicsQuality: value }),
 
+      touchControlsEnabled: false,
+      setTouchControlsEnabled: (value) => set({ touchControlsEnabled: value }),
+
     }),
     {
       name: 'tag-game-storage', // name of the item in the storage (must be unique)
@@ -48,12 +55,15 @@ export const useStore = create()(
       partialize: (state) => ({
 
         darkMode: state.darkMode,
+        sidebar: state.sidebar,
+        showMenu: state.showMenu,
+        
         // theme: state.theme,
         nickname: state.nickname,
 
         // renderMode: state.renderMode,
 
-        // touchControlsEnabled: state.touchControlsEnabled,
+        touchControlsEnabled: state.touchControlsEnabled,
         // cameraShakeEnabled: state.cameraShakeEnabled,
 
         // debug: state.debug,

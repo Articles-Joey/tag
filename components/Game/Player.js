@@ -12,6 +12,8 @@ import { degToRad } from "three/src/math/MathUtils"
 
 const JUMP_FORCE = 4;
 const SPEED = 4;
+const CONTROLLER_DEADZONE = 0.15;
+const LOOK_SENSITIVITY = 0.04;
 
 function PlayerBase() {
 
@@ -20,9 +22,19 @@ function PlayerBase() {
     const [action, setAction] = useState("Idle")
     const [speed, setSpeed] = useState(1)
     const [isJumping, setIsJumping] = useState(false)
+    
+    // Controller specific refs
+    const prevToggleView = useRef(false);
+
+    // Standard Gamepad Mapping (Xbox 360 / One / DualShock)
+    // 0: A/Cross, 1: B/Circle, 2: X/Square, 3: Y/Triangle
+    // 6: LT/L2, 7: RT/R2
 
     useEffect(() => {
         if (isJumping) return;
+        // Gamepad polling is done in useFrame, this effect mainly handles keyboard state for Action
+        // We'll update this slightly to trust the velocity or movement flag instead of just keyboard keys
+        // But for now, let's keep it responding to logic.
         
         if (moveLeft || moveRight || moveBackward || moveForward) {
             if (shift) {
@@ -42,6 +54,11 @@ function PlayerBase() {
     }, [cameraView])
 
     const { camera } = useThree()
+
+    useEffect(() => {
+        // Ensure camera looks forward on spawn
+        camera.rotation.set(0, 0, 0, 'YXZ') // Set Rotation Order to YXZ for FPS style
+    }, [camera])
 
     const modelRef = useRef()
     
@@ -128,7 +145,7 @@ function PlayerBase() {
             camera.position.copy(
                 new Vector3(
                     pos.current[0],
-                    (pos.current[1] / (crouch ? 2 : 1)) + 1, // Adjust height for crouch
+                    (pos.current[1] / (crouch ? 2 : 1)) + 1, // Adjust height for crouch, +2 units higher default
                     pos.current[2]
                 )
             );
@@ -138,20 +155,81 @@ function PlayerBase() {
 
         const direction = new Vector3()
 
-        const frontVector = new Vector3(
-            0,
-            0,
-            (moveBackward ? 1 : 0) - (moveForward ? 1 : 0)
-        )
+        // Get Gamepad Input
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        const gamepad = gamepads[0]; // Assume first controller
 
-        const sideVector = new Vector3(
-            (moveLeft ? 1 : 0) - (moveRight ? 1 : 0),
-            0,
-            0,
-        )
+        let forwardInput = (moveBackward ? 1 : 0) - (moveForward ? 1 : 0);
+        let sideInput = (moveLeft ? 1 : 0) - (moveRight ? 1 : 0);
+        let isSprintingInput = shift;
+        let isJumpingInput = jump;
+        
+        let rotationX = 0;
+        let rotationY = 0;
+
+        if (gamepad) {
+            // Left Stick (Movement) - Axes 0, 1
+            const axisX = gamepad.axes[0];
+            const axisY = gamepad.axes[1];
+            
+            if (Math.abs(axisX) > CONTROLLER_DEADZONE) sideInput -= axisX; // Inverted X axis
+            if (Math.abs(axisY) > CONTROLLER_DEADZONE) forwardInput += axisY;
+
+            // Right Stick (Look) - Axes 2, 3
+            const lookX = gamepad.axes[2];
+            const lookY = gamepad.axes[3];
+
+            if (Math.abs(lookX) > CONTROLLER_DEADZONE) rotationY -= lookX * LOOK_SENSITIVITY;
+            if (Math.abs(lookY) > CONTROLLER_DEADZONE) rotationX -= lookY * LOOK_SENSITIVITY;
+
+            // Buttons
+            // Button 0: A (Jump)
+            if (gamepad.buttons[0].pressed) isJumpingInput = true;
+            
+            // Button 7: RT (Sprint)
+            if (gamepad.buttons[7] && (gamepad.buttons[7].pressed || gamepad.buttons[7].value > 0.1)) {
+                isSprintingInput = true;
+            }
+
+            // Button 3: Y (Toggle View)
+            if (gamepad.buttons[3].pressed) {
+                if (!prevToggleView.current) {
+                    setIsThirdPerson(p => !p);
+                    prevToggleView.current = true;
+                }
+            } else {
+                prevToggleView.current = false;
+            }
+        }
+
+        // Apply Camera Rotation from Controller
+        if (rotationX !== 0 || rotationY !== 0) {
+            camera.rotation.y += rotationY;
+            camera.rotation.x += rotationX;
+            // Clamp Pitch
+            camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+        }
+
+        const frontVector = new Vector3(0, 0, forwardInput);
+        const sideVector = new Vector3(sideInput, 0, 0);
 
         const isMoving = frontVector.length() > 0 || sideVector.length() > 0
-        const isSprinting = shift && isMoving && sprintEnergy.current > 0
+        const isSprinting = isSprintingInput && isMoving && sprintEnergy.current > 0
+
+        // Determine animation state if using controller (since useEffect above only checks keys)
+        if (isMoving && !isJumping) {
+            if (action !== "Run" && action !== "Walk") {
+               // This is a quick fix to sync animation state with controller. 
+               // Ideally we move the logic from useEffect to here completely.
+               setAction(isSprinting ? "Run" : "Walk");
+            } else if (isSprinting && action === "Walk") {
+                setAction("Run");
+            } else if (!isSprinting && action === "Run") {
+                setAction("Walk");
+            }
+        } else if (!isMoving && !isJumping && action !== "Idle") {
+             setAction("Idle");
+        }
 
         if (isSprinting) {
             sprintEnergy.current = Math.max(0, sprintEnergy.current - delta)
@@ -208,7 +286,7 @@ function PlayerBase() {
         }
 
         // Jump if grounded for at least 3 frames (avoids apex jumping)
-        if (jump && groundedFrames.current > 2) {
+        if (isJumpingInput && groundedFrames.current > 2) {
             api.velocity.set(vel.current[0], JUMP_FORCE, vel.current[2])
             groundedFrames.current = 0
 
@@ -220,7 +298,7 @@ function PlayerBase() {
             setTimeout(() => {
                 setIsJumping(false)
                 setSpeed(1)
-            }, 1000)
+            }, 800)
         }
 
         if (modelRef.current) {

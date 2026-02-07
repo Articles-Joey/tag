@@ -26,6 +26,7 @@ import { useKeyboard } from "@/hooks/useKeyboard";
 import { usePeerStore } from '@/hooks/usePeerStore';
 import { useTagGameStore } from '@/hooks/useTagGameStore';
 import { useStore } from '@/hooks/useStore';
+import classNames from 'classnames';
 
 const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
     ssr: false,
@@ -33,14 +34,19 @@ const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
 
 export default function TagGamePage() {
 
-    const {
-        socket
-    } = useSocketStore(state => ({
-        socket: state.socket
-    }));
-    
+    // const {
+    //     socket
+    // } = useSocketStore(state => ({
+    //     socket: state.socket
+    // }));
+
     // Global User Settings
     const nickname = useStore(state => state.nickname);
+    const sidebar = useStore(state => state.sidebar);
+
+    const showMenu = useStore(state => state.showMenu);
+    const toggleShowMenu = useStore(state => state.toggleShowMenu);
+    // const setShowMenu = useStore(state => state.setShowMenu);
 
     const router = useRouter()
     const pathname = usePathname()
@@ -100,9 +106,9 @@ export default function TagGamePage() {
                             setGameState(prev => {
                                 const players = [...(prev.players || [])];
                                 const index = players.findIndex(p => p.id === conn.peer);
-                                const newPlayerData = { 
-                                    id: conn.peer, 
-                                    ...msg.data 
+                                const newPlayerData = {
+                                    id: conn.peer,
+                                    ...msg.data
                                 };
 
                                 if (index > -1) {
@@ -142,7 +148,7 @@ export default function TagGamePage() {
                     if (!peer) {
                         setPeer(newPeer);
                         setIsHost(false);
-                        
+
                         const conn = newPeer.connect(server);
                         conn.on('open', () => {
                             console.log('Connected to Host');
@@ -163,7 +169,7 @@ export default function TagGamePage() {
                         conn.on('error', err => console.error('Connection Error:', err));
                     }
                 });
-                
+
                 newPeer.on('error', err => console.error('PeerJS Client Error:', err));
             };
             initClient();
@@ -189,66 +195,66 @@ export default function TagGamePage() {
                 let players = [...(currentState.players || [])];
                 const index = players.findIndex(p => p.id === myId);
                 const newPlayer = { id: myId, position: myPosition, rotation: myRotation, action: myAction, nickname: myNickname };
-                
+
                 if (index > -1) {
                     players[index] = newPlayer;
                 } else {
                     players.push(newPlayer);
                 }
-                
+
                 let itPlayerId = currentState.itPlayerId || myId; // Default to host if not set
-                
+
                 // Debug distance when I am not IT
                 if (itPlayerId !== myId) {
-                     const itPlayer = players.find(p => p.id === itPlayerId);
-                     const me = players.find(p => p.id === myId);
-                     if (itPlayer && me && itPlayer.position && me.position) {
+                    const itPlayer = players.find(p => p.id === itPlayerId);
+                    const me = players.find(p => p.id === myId);
+                    if (itPlayer && me && itPlayer.position && me.position) {
                         const dx = me.position[0] - itPlayer.position[0];
                         const dy = me.position[1] - itPlayer.position[1];
                         const dz = me.position[2] - itPlayer.position[2];
-                        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
                         // console.log(`Distance to IT (${itPlayerId}): ${dist.toFixed(2)}`);
-                     }
+                    }
                 }
 
                 // Tag Logic
                 if (Date.now() > lastTagTime.current + 3000) {
-                     const currentItPlayer = players.find(p => p.id === itPlayerId);
-                     
-                     if (currentItPlayer && currentItPlayer.position) {
-                         // Check collisions with other players
-                         // Use find to only trigger one tag per tick and avoid loop mutation issues
-                         const taggedPlayer = players.find(p => {
+                    const currentItPlayer = players.find(p => p.id === itPlayerId);
+
+                    if (currentItPlayer && currentItPlayer.position) {
+                        // Check collisions with other players
+                        // Use find to only trigger one tag per tick and avoid loop mutation issues
+                        const taggedPlayer = players.find(p => {
                             if (p.id === itPlayerId) return false; // Don't tag self
                             if (!p.position) return false;
 
                             const dx = p.position[0] - currentItPlayer.position[0];
                             const dy = p.position[1] - currentItPlayer.position[1];
                             const dz = p.position[2] - currentItPlayer.position[2];
-                            const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                            
+                            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
                             return dist < 1.0;
-                         });
+                        });
 
-                         if (taggedPlayer) {
-                             console.log(`Tag Event! ${itPlayerId} tagged ${taggedPlayer.id}`);
-                             itPlayerId = taggedPlayer.id;
-                             lastTagTime.current = Date.now();
-                         }
+                        if (taggedPlayer) {
+                            console.log(`Tag Event! ${itPlayerId} tagged ${taggedPlayer.id}`);
+                            itPlayerId = taggedPlayer.id;
+                            lastTagTime.current = Date.now();
+                        }
 
-                     } else {
-                         // If IT player left or is invalid, reset to Host
-                         if (!currentItPlayer && players.length > 0) {
-                             console.log("IT player lost, resetting to Host");
-                             itPlayerId = myId;
-                         }
-                     }
+                    } else {
+                        // If IT player left or is invalid, reset to Host
+                        if (!currentItPlayer && players.length > 0) {
+                            console.log("IT player lost, resetting to Host");
+                            itPlayerId = myId;
+                        }
+                    }
                 }
 
                 const newState = { ...currentState, players, itPlayerId };
-                
+
                 setGameState(newState);
-                
+
                 // Broadcast
                 Object.values(connectionsRef.current).forEach(conn => {
                     if (conn.open) {
@@ -259,9 +265,9 @@ export default function TagGamePage() {
                 // Client: Send position to host
                 const hostConn = connectionsRef.current['host'];
                 if (hostConn && hostConn.open) {
-                    hostConn.send({ 
-                        type: 'playerUpdate', 
-                        data: { position: myPosition, rotation: myRotation, action: myAction, nickname: myNickname } 
+                    hostConn.send({
+                        type: 'playerUpdate',
+                        data: { position: myPosition, rotation: myRotation, action: myAction, nickname: myNickname }
                     });
                 }
             }
@@ -283,7 +289,7 @@ export default function TagGamePage() {
 
     // }, []);
 
-    const [showMenu, setShowMenu] = useState(false)
+    // const [showMenu, setShowMenu] = useState(false)
 
     const [touchControlsEnabled, setTouchControlsEnabled] = useLocalStorageNew("game:touchControlsEnabled", false)
 
@@ -319,7 +325,7 @@ export default function TagGamePage() {
 
     let panelProps = {
         kickPlayer,
-        server,
+        // server,
         players,
         touchControlsEnabled,
         setTouchControlsEnabled,
@@ -328,7 +334,7 @@ export default function TagGamePage() {
         // isFullscreen,
         // requestFullscreen,
         // exitFullscreen,
-        setShowMenu
+        // setShowMenu
     }
 
     const game_name = 'Tag'
@@ -337,11 +343,17 @@ export default function TagGamePage() {
     return (
 
         <div
-            className={`tag-game-page ${isFullscreen && 'fullscreen'}`}
+            className={
+                classNames(
+                    `tag-game-page`,
+                    isFullscreen && 'fullscreen',
+                    sidebar && 'sidebar-open'
+                )
+            }
             id="tag-game-page"
         >
 
-            <div className="menu-bar card card-articles p-1 justify-content-center">
+            <div className="menu-bar card rounded-0 card-articles p-1 justify-content-center">
 
                 <div className='flex-header align-items-center'>
 
@@ -349,7 +361,7 @@ export default function TagGamePage() {
                         small
                         active={showMenu}
                         onClick={() => {
-                            setShowMenu(prev => !prev)
+                            toggleShowMenu()
                         }}
                     >
                         <i className="fad fa-bars"></i>
@@ -365,20 +377,29 @@ export default function TagGamePage() {
             </div>
 
             <div className={`mobile-menu ${showMenu && 'show'}`}>
-                <LeftPanelContent
-                    {...panelProps}
-                />
+                <div
+                    style={{
+                        maxWidth: '300px',
+                        margin: '0 auto'
+                    }}
+                >
+                    <LeftPanelContent
+                        {...panelProps}
+                    />
+                </div>
             </div>
 
             {/* <TouchControls
                 touchControlsEnabled={touchControlsEnabled}
             /> */}
 
-            <div className='panel-left card rounded-0 d-none d-lg-flex'>
+            <div className='panel-left'>
 
+                {/* <div className='card rounded-0'> */}
                 <LeftPanelContent
                     {...panelProps}
                 />
+                {/* </div> */}
 
             </div>
 

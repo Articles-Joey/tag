@@ -1,8 +1,11 @@
 import { memo, useState } from 'react';
 
 import { useBox } from '@react-three/cannon';
+// import { useStore } from '@/hooks/useStore';
 
 function Ground(props) {
+
+    // const touchControlsEnabled = useStore(state => state.touchControlsEnabled);
 
     // This reference gives us direct access to the THREE.Mesh object
     // const ref = useRef()
@@ -28,9 +31,9 @@ function Ground(props) {
             {...props}
             ref={ref}
             scale={1}
-            // onClick={(event) => click(!clicked)}
-            // onPointerOver={(event) => (event.stopPropagation(), hover(true))}
-            // onPointerOut={(event) => hover(false)}
+        // onClick={(event) => click(!clicked)}
+        // onPointerOver={(event) => (event.stopPropagation(), hover(true))}
+        // onPointerOut={(event) => hover(false)}
         >
             <boxGeometry {...props} args={platform_size} />
             <meshStandardMaterial color={'green'} transparent={true} opacity={0.1} />

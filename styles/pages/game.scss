@@ -4,6 +4,17 @@
     position: relative;
     display: flex;
 
+    &.sidebar-open {
+        @include media-breakpoint-up(lg) {
+            .panel-left {
+                display: block;
+            }
+            .menu-bar {
+                display: none;
+            }
+        }
+    }
+
     &.fullscreen {
         .mobile-menu {
             top: 0px;
@@ -37,10 +48,11 @@
         width: 100%;
         height: 50px;
         z-index: 3;
+        background-color: rgba(0, 0, 0, 0.5);
 
-        @include media-breakpoint-up(lg) {
-            display: none;
-        }
+        // @include media-breakpoint-up(lg) {
+        //     display: none;
+        // }
     }
 
     .mobile-menu {
@@ -48,7 +60,7 @@
         bottom: 50px;
         left: 0;
         width: 100%;
-        top: 50px;
+        top: 0px;
         // height: calc(100vh - 50px);
         z-index: 2;
         background-color: rgba(0, 0, 0, 0.75);
@@ -129,6 +141,10 @@
 
     .ad {
         // padding: 1rem;
+    }
+
+    .panel-left {
+        display: none;
     }
 
     .panel-left, .panel-right {        

@@ -32,7 +32,7 @@ const GrassPlane = () => {
 import Sand from '@/components/Game/Sand';
 // import { Cannon } from "./Models/Cannon";
 // import { PaintBucket } from "./Models/PaintBucket";
-import { Farm } from "@/components/Models/Farm";
+
 // import Duck from "@/components/Models/Duck";
 import { DuckModel as Duck } from "@/components/Models/Duck.jsx";
 import { Debug, Physics } from "@react-three/cannon";
@@ -49,6 +49,9 @@ import Grass from "./Grass";
 import Players from "./Players";
 import ItMarker from "./ItMarker";
 import Obstacles from "./Obstacles";
+import Barns from "./Barns";
+import { useStore } from "@/hooks/useStore";
+// import { useStore } from "@/hooks/useStore";
 
 function GameCanvas(props) {
 
@@ -82,6 +85,8 @@ function GameCanvas(props) {
     const controlType = useTagGameStore(state => state.controlType)
     const debug = useTagGameStore(state => state.debug)
 
+    const darkMode = useStore((state) => state.darkMode);
+
     return (
         <Canvas shadows id="game-canvas" camera={{ position: [-10, 40, 40], fov: 50 }}>
 
@@ -91,16 +96,21 @@ function GameCanvas(props) {
 
             <Sky
                 // distance={450000}
-                sunPosition={[100, 20, 100]} // Mid-day/Sunset position
+                sunPosition={
+                    darkMode ?
+                    [100, 0, 100]
+                    :
+                    [100, 20, 100]
+                } // Mid-day/Sunset position
             // inclination={0}
             // azimuth={0.25}
             // {...props} 
             />
 
-            <ambientLight intensity={2} />
+            <ambientLight intensity={darkMode ? 1 : 2} />
             <directionalLight
                 position={[50, 60, 50]}
-                intensity={2}
+                intensity={darkMode ? 1 : 2}
                 castShadow
                 shadow-mapSize-width={2048}
                 shadow-mapSize-height={2048}
@@ -118,30 +128,35 @@ function GameCanvas(props) {
                 />
             }
 
-            <Physics gravity={[0, -10, 0]} defaultContactMaterial={{ friction: 0, restitution: 0 }}>
+            <Physics
+                gravity={[0, -10, 0]}
+                defaultContactMaterial={{ friction: 0, restitution: 0 }}
+                iterations={20}
+                tolerance={0.0001}
+            >
 
                 <Debug
                     scale={debug ? 1 : 0}
                 >
                     <Ground />
-    
+
                     <Log
                         position={[0, 0.25, 10]}
                         size={[10, 0.5, 0.5]}
                     />
-    
+
                     <Log
                         position={[0, 0.25, 12]}
                         size={[10, 0.5, 0.5]}
                     />
-    
+
                     <Log
                         position={[0, 0.25, 14]}
                         size={[10, 0.5, 0.5]}
                     />
-    
+
                     <Dummy />
-    
+
                     {controlType == "Mouse and Keyboard" &&
                         <Player />
                     }
@@ -149,11 +164,11 @@ function GameCanvas(props) {
                     <Players />
 
                     <Obstacles />
-    
+
                     {/* <BotPlayer /> */}
-    
+
                     <ItMarker />
-    
+
                     {/* Center Dummy */}
                     <Duck
                         position={[0, 0, -10]}
@@ -187,43 +202,10 @@ function GameCanvas(props) {
                 />
             </group> */}
 
-            <group>
-                <Farm
-                    scale={0.2}
-                    position={[0, 0, 120]}
-                />
-
-                <Farm
-                    scale={0.2}
-                    position={[-40, 0, 115]}
-                />
-
-                <Farm
-                    scale={0.2}
-                    position={[40, 0, 115]}
-                />
-            </group>
-
-            <group>
-                <Farm
-                    scale={0.2}
-                    position={[0, 0, -120]}
-                    rotation={[0, -Math.PI, 0]}
-                />
-                <Farm
-                    scale={0.2}
-                    position={[40, 0, -115]}
-                    rotation={[0, -Math.PI, 0]}
-                />
-                <Farm
-                    scale={0.2}
-                    position={[-40, 0, -115]}
-                    rotation={[0, -Math.PI, 0]}
-                />
-            </group>
+            <Barns />
 
             <Trees />
-            
+
             <Grass />
 
             <GrassPlane />

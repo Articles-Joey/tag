@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Modal, Form } from "react-bootstrap"
 
 import ArticlesButton from "@/components/UI/Button";
 import { useStore } from "@/hooks/useStore";
 
-export default function FourFrogsSettingsModal({
+import B from "@articles-media/articles-gamepad-helper/dist/img/Xbox UI/B.svg";
+import { useModalNavigation } from "@/hooks/useModalNavigation";
+
+export default function SettingsModal({
     show,
     setShow,
 }) {
@@ -21,6 +24,28 @@ export default function FourFrogsSettingsModal({
 
     const darkMode = useStore((state) => state.darkMode);
     const setDarkMode = useStore((state) => state.setDarkMode);
+
+    const elementsRef = useRef([]);
+    useModalNavigation(elementsRef, () => setShowModal(false));
+
+    const [isGamepadConnected, setIsGamepadConnected] = useState(false);
+
+    useEffect(() => {
+        const updateGamepadStatus = () => {
+            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+            const connected = Array.from(gamepads).some(gp => gp !== null);
+            setIsGamepadConnected(connected);
+        };
+
+        window.addEventListener("gamepadconnected", updateGamepadStatus);
+        window.addEventListener("gamepaddisconnected", updateGamepadStatus);
+        updateGamepadStatus();
+
+        return () => {
+            window.removeEventListener("gamepadconnected", updateGamepadStatus);
+            window.removeEventListener("gamepaddisconnected", updateGamepadStatus);
+        }
+    }, []);
 
     return (
         <>
@@ -111,7 +136,11 @@ export default function FourFrogsSettingsModal({
                                                     setDarkMode(level)
                                                 }}
                                             >
-                                                {level.toString()}
+                                                <span
+                                                    style={{ textTransform: 'capitalize' }}
+                                                >
+                                                    {level.toString()}
+                                                </span>
                                             </ArticlesButton>
                                         )}
                                     </div>
@@ -125,27 +154,39 @@ export default function FourFrogsSettingsModal({
                                 {[
                                     {
                                         action: 'Move Up',
-                                        defaultKeyboardKey: 'W'
+                                        defaultKeyboardKey: 'W',
+                                        defaultControllerKey: 'Left Stick Up',
                                     },
                                     {
                                         action: 'Move Down',
-                                        defaultKeyboardKey: 'S'
+                                        defaultKeyboardKey: 'S',
+                                        defaultControllerKey: 'Left Stick Down',
                                     },
                                     {
                                         action: 'Move Left',
-                                        defaultKeyboardKey: 'A'
+                                        defaultKeyboardKey: 'A',
+                                        defaultControllerKey: 'Left Stick Left',
                                     },
                                     {
                                         action: 'Move Right',
-                                        defaultKeyboardKey: 'D'
+                                        defaultKeyboardKey: 'D',
+                                        defaultControllerKey: 'Left Stick Right',
+                                    },
+                                    {
+                                        action: 'Look Around',
+                                        defaultKeyboardKey: 'Mouse Move',
+                                        defaultControllerKey: 'Right Stick',
+                                        disableChange: true,
                                     },
                                     {
                                         action: 'Sprint',
-                                        defaultKeyboardKey: 'Shift'
+                                        defaultKeyboardKey: 'Shift',
+                                        defaultControllerKey: 'RT',
                                     },
                                     {
                                         action: 'Camera Control Toggle',
-                                        defaultKeyboardKey: 'V'
+                                        defaultKeyboardKey: 'V',
+                                        defaultControllerKey: 'Y',
                                     },
                                 ].map(obj =>
                                     <div key={obj.action}>
@@ -160,9 +201,14 @@ export default function FourFrogsSettingsModal({
 
                                                 <div className="badge badge-hover bg-dark border me-1">{obj.defaultKeyboardKey}</div>
 
-                                                <ArticlesButton 
+                                                {isGamepadConnected && obj.defaultControllerKey &&
+                                                    <div className="badge badge-hover bg-primary border me-1">{obj.defaultControllerKey}</div>
+                                                }
+
+                                                <ArticlesButton
                                                     className=""
                                                     small
+                                                    disabled={obj.disableChange}
                                                 >
                                                     Change Key
                                                 </ArticlesButton>
@@ -206,35 +252,24 @@ export default function FourFrogsSettingsModal({
 
                 <Modal.Footer className="justify-content-between">
 
-                    {/* <div></div> */}
+                    <ArticlesButton
+                        variant="outline-danger ms-3"
+                        onClick={() => {
+                            setShow(false)
+                        }}
+                    >
+                        Reset
+                    </ArticlesButton>
 
-
-                    <div>
-
-                        <ArticlesButton
-                            variant="outline-dark"
-                            onClick={() => {
-                                setShow(false)
-                            }}
-                        >
-                            Close
-                        </ArticlesButton>
-
-                        <ArticlesButton
-                            variant="outline-danger ms-3"
-                            onClick={() => {
-                                setShow(false)
-                            }}
-                        >
-                            Reset
-                        </ArticlesButton>
-
-                    </div>
-
-
-                    {/* <ArticlesButton variant="success" onClick={() => setValue(false)}>
-                    Save
-                </ArticlesButton> */}
+                    <ArticlesButton
+                        variant="outline-dark"
+                        onClick={() => {
+                            setShow(false)
+                        }}
+                    >
+                        <img src={B.src} className="me-1" alt="Close" />
+                        Close
+                    </ArticlesButton>
 
                 </Modal.Footer>
 

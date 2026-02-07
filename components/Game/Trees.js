@@ -8,47 +8,46 @@ export default function Trees() {
 
     const trees = useMemo(() => {
         const items = [];
+        const boundarySize = 90; // Half-size of the square boundary
+        const density = 3; // Space between trees
 
-        // Determine step based on quality
-        // High = all trees (step 1)
-        // Medium = 2/3 trees (approx step 1.5, or skip every 3rd? simpler to just increase step size)
-        // Actually user said: 2/3 for medium, 1/3 for low.
-        
-        // Let's filter after generation or generate less.
-        // Step logic:
-        // High: i++ (100%)
-        // Medium: i+=1.5? No loop must be integer.
-        
-        // Easier to filter the final list:
-        // High: Modulo 1 (take all)
-        // Medium: Take if (i % 3 !== 0) -> 66% 
-        // Low: Take if (i % 3 === 0) -> 33%
+        // Calculate steps for one side
+        const steps = Math.floor((boundarySize * 2) / density);
 
-        // West
-        for (let i = 0; i < 56; i++) {
-            items.push({ idx: i, position: [-90, 0, (-84 + i * 3)] })
-        }
-        // East
-        for (let i = 0; i < 56; i++) {
-            items.push({ idx: i + 100, position: [90, 0, (-84 + i * 3)] })
-        }
-        // North
-        for (let i = 0; i < 60; i++) {
-            items.push({ idx: i + 200, position: [(-88 + i * 3), 0, -80] })
-        }
-        // South
-        for (let i = 0; i < 60; i++) {
-            items.push({ idx: i + 300, position: [(-88 + i * 3), 0, 80] })
+        // Generate positions for the perimeter
+        for (let i = 0; i < steps * 4; i++) {
+            let x, z;
+            
+            // Determine which side of the square we are on based on progress
+            // 0: North (-z), 1: East (+x), 2: South (+z), 3: West (-x)
+            const side = Math.floor(i / steps);
+            const progress = (i % steps) * density - boundarySize; // Goes from -boundary to +boundary
+
+            switch(side) {
+                case 0: // North side (moving East along X)
+                    x = progress;
+                    z = -boundarySize;
+                    break;
+                case 1: // East side (moving South along Z)
+                    x = boundarySize;
+                    z = progress;
+                    break;
+                case 2: // South side (moving West along X)
+                    x = -progress; // Reverse direction
+                    z = boundarySize;
+                    break;
+                case 3: // West side (moving North along Z)
+                    x = -boundarySize;
+                    z = -progress; // Reverse direction
+                    break;
+            }
+
+            items.push({ idx: i, position: [x, 0, z] });
         }
 
         const filteredItems = items.filter((item, index) => {
             if (graphicsQuality === "High") return true; 
-            if (graphicsQuality === "Medium") return index % 3 !== 0; // Keeps 0 (no), 1 (yes), 2 (yes), 3 (no) ... wait. 0%3=0.
-            // 0, 1, 2, 3, 4, 5
-            // H: Y, Y, Y, Y, Y, Y
-            // M: N, Y, Y, N, Y, Y (66%)
-            // L: Y, N, N, Y, N, N (33%) -> return index % 3 === 0
-            
+            if (graphicsQuality === "Medium") return index % 3 !== 0; 
             if (graphicsQuality === "Low") return index % 3 === 0;
             return true;
         });
