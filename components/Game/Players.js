@@ -1,6 +1,6 @@
 import { usePeerStore } from '@/hooks/usePeerStore';
-import SpacesuitModel from '../Models/Spacesuit';
 import { useMemo } from 'react';
+import RemotePlayer from './RemotePlayer';
 
 export default function Players() {
 
@@ -15,18 +15,7 @@ export default function Players() {
     return (
         <>
             {otherPlayers.map(player => (
-                <group key={player.id} position={player.position}>
-                    <SpacesuitModel
-                        scale={0.5}
-                        position={[0, -0.3, 0]}
-                        action="Idle"
-                    />
-                     {/* Player Label */}
-                     {/* <mesh position={[0, 2, 0]}>
-                        <textGeometry args={[player.id, { size: 0.5, height: 0.1 }]} />
-                        <meshBasicMaterial color="white" />
-                    </mesh> */}
-                </group>
+                <RemotePlayer key={player.id} player={player} />
             ))}
         </>
     )

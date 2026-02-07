@@ -69,8 +69,12 @@ export const useTagGameStore = create((set) => ({
     ref: null,
 	api: null,
     position: [0, 0, 0], // Initial sphere position
+    rotation: 0,
+    action: 'Idle',
 	setPlayer: (ref, api) => set({ ref, api }),
     setPosition: (position) => set({ position }),
+    setRotation: (rotation) => set({ rotation }),
+    setAction: (action) => set({ action }),
 
     sprintEnergy: 5,
     setSprintEnergy: (sprintEnergy) => set({ sprintEnergy }),

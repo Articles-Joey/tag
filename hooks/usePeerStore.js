@@ -26,4 +26,7 @@ export const usePeerStore = create((set) => ({
         }))
     },
     
+    bannedIds: [],
+    addBannedId: (id) => set((state) => ({ bannedIds: [...state.bannedIds, id] })),
+
 }))

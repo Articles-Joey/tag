@@ -54,12 +54,13 @@ export default function TagGameLandingPage() {
     const toggleDarkMode = useStore((state) => state.toggleDarkMode);
     const nickname = useStore((state) => state.nickname);
     const setNickname = useStore((state) => state.setNickname);
-    const showInfoModal = useStore((state) => state.showInfoModal);
+    // const showInfoModal = useStore((state) => state.showInfoModal);
     const setShowInfoModal = useStore((state) => state.setShowInfoModal);
-    const showSettingsModal = useStore((state) => state.showSettingsModal);
+    // const showSettingsModal = useStore((state) => state.showSettingsModal);
     const setShowSettingsModal = useStore((state) => state.setShowSettingsModal);
-    const showPrivateGameModal = useStore((state) => state.showPrivateGameModal);
-    const setShowPrivateGameModal = useStore((state) => state.setShowPrivateGameModal);
+    // const showPrivateGameModal = useStore((state) => state.showPrivateGameModal);
+    // const setShowPrivateGameModal = useStore((state) => state.setShowPrivateGameModal);
+    const setShowCreditsModal = useStore((state) => state.setShowCreditsModal);
 
     // const [nickname, setNickname] = useLocalStorageNew("game:nickname", userReduxState.display_name)
 
@@ -70,12 +71,12 @@ export default function TagGameLandingPage() {
     const [joinGame, setJoinGame] = useState(false)
 
     const [isMounted, setIsMounted] = useState(false)
-    const [joinAttempted, setJoinAttempted] = useState(false)
+    // const [joinAttempted, setJoinAttempted] = useState(false)
 
-    const [lobbyDetails, setLobbyDetails] = useState({
-        players: [],
-        games: [],
-    })
+    // const [lobbyDetails, setLobbyDetails] = useState({
+    //     players: [],
+    //     games: [],
+    // })
 
     // useEffect(() => {
 
@@ -383,9 +384,7 @@ export default function TagGameLandingPage() {
                                 className={`w-50`}
                                 small
                                 onClick={() => {
-                                    setShowInfoModal({
-                                        game: game_name
-                                    })
+                                    setShowCreditsModal(true)
                                 }}
                             >
                                 <i className="fad fa-users"></i>

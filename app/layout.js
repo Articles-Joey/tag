@@ -11,6 +11,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 // import "./globals.css";
 import "@/styles/index.scss";
 
+import "@articles-media/articles-dev-box/dist/style.css";
+
+import "@articles-media/articles-gamepad-helper/dist/articles-gamepad-helper.css";
+
 // import SocketLogicHandler from "@/components/SocketLogicHandler";
 import DarkModeHandler from '@/components/UI/DarkModeHandler';
 import GlobalClientModals from '@/components/UI/GlobalClientModals';
@@ -27,8 +31,8 @@ import LayoutClient from './layout-client';
 // });
 
 export const metadata = {
-  title: "Ice Slide",
-  description: "",
+  title: "Tag",
+  description: "Multiplayer Peer-to-peer tag game built with React Three Fiber and Next.js. Run, hide, and tag your friends in a fun and dynamic 3D environment. Join the chase and see if you can avoid being 'it' in this fast-paced game of tag!",
 };
 
 export default function RootLayout({ children }) {

@@ -19,6 +19,10 @@ export const useStore = create()(
       setDarkMode: (newValue) => set({ darkMode: newValue }),
       toggleDarkMode: () => set({ darkMode: !get().darkMode }),
 
+      sidebar: false,
+      setSidebar: (value) => set({ sidebar: value }),
+      toggleSidebar: () => set({ sidebar: !get().sidebar }),
+
       showCreditsModal: false,
       setShowCreditsModal: (value) => set({ showCreditsModal: value }),
 

@@ -13,7 +13,7 @@ const link = `models/Spacesuit-transformed.glb`
 
 function SpacesuitModel(props) {
 
-  const { action } = props
+  const { action, speed = 1 } = props
 
   const group = React.useRef()
   const { scene, animations } = useGLTF(link)
@@ -26,15 +26,20 @@ function SpacesuitModel(props) {
   useEffect(() => {
 
     // console.log("Actions", actions)
-    Object.values(actions).forEach((a) => a.stop());
+    Object.values(actions).forEach((a) => {
+        a.stop()
+        a.setEffectiveTimeScale(1) // Reset speed
+    });
 
     if (action && actions[action]) {
-      actions[action].play();
+      const act = actions[action];
+      act.setEffectiveTimeScale(speed);
+      act.play();
     } else if (actions['Idle']) {
       actions['Idle'].play();
     }
 
-  }, [actions, action]);
+  }, [actions, action, speed]);
 
   return (
     <group ref={group} {...props} dispose={null}>

@@ -47,6 +47,8 @@ import BotPlayer from "./BotPlayer";
 import Trees from "./Trees";
 import Grass from "./Grass";
 import Players from "./Players";
+import ItMarker from "./ItMarker";
+import Obstacles from "./Obstacles";
 
 function GameCanvas(props) {
 
@@ -116,7 +118,7 @@ function GameCanvas(props) {
                 />
             }
 
-            <Physics>
+            <Physics gravity={[0, -10, 0]} defaultContactMaterial={{ friction: 0, restitution: 0 }}>
 
                 <Debug
                     scale={debug ? 1 : 0}
@@ -145,8 +147,12 @@ function GameCanvas(props) {
                     }
 
                     <Players />
+
+                    <Obstacles />
     
-                    <BotPlayer />
+                    {/* <BotPlayer /> */}
+    
+                    <ItMarker />
     
                     {/* Center Dummy */}
                     <Duck

@@ -12,6 +12,7 @@ import { useSocketStore } from "@/hooks/useSocketStore";
 import { useTagGameStore } from "@/hooks/useTagGameStore";
 import { useStore } from "@/hooks/useStore";
 import PeerDetails from "./PeerDetails";
+import useFullscreen from "@/hooks/useFullScreen";
 
 export default function LeftPanelContent(props) {
 
@@ -26,34 +27,45 @@ export default function LeftPanelContent(props) {
 
     // return ('Test')
 
+    const { isFullscreen, requestFullscreen, exitFullscreen } = useFullscreen();
+
     const {
+        kickPlayer,
         server,
         // players,
         touchControlsEnabled,
         setTouchControlsEnabled,
         reloadScene,
         controllerState,
-        isFullscreen,
-        requestFullscreen,
-        exitFullscreen,
+        // isFullscreen,
+        // requestFullscreen,
+        // exitFullscreen,
         setShowMenu
     } = props;
 
-    const {
-        position,
-        controlType,
-        setControlType,
-        tagCounter,
-        debug,
-        setDebug
-    } = useTagGameStore(state => ({
-        position: state.position,
-        controlType: state.controlType,
-        setControlType: state.setControlType,
-        tagCounter: state.tagCounter,
-        debug: state.debug,
-        setDebug: state.setDebug
-    }));
+    // const {
+    //     position,
+    //     controlType,
+    //     setControlType,
+    //     tagCounter,
+    //     debug,
+    //     setDebug
+    // } = useTagGameStore(state => ({
+    //     position: state.position,
+    //     controlType: state.controlType,
+    //     setControlType: state.setControlType,
+    //     tagCounter: state.tagCounter,
+    //     debug: state.debug,
+    //     setDebug: state.setDebug
+    // }));
+
+    const sidebar = useStore(state => state.sidebar);
+    const toggleSidebar = useStore(state => state.toggleSidebar);
+
+    const position = useTagGameStore(state => state.position);
+    const tagCounter = useTagGameStore(state => state.tagCounter);
+    const debug = useTagGameStore(state => state.debug);
+    const setDebug = useTagGameStore(state => state.setDebug);
 
     // const [ playerLocation, setPlayerLocation ] = useState({
     //     x: 0,
@@ -61,11 +73,11 @@ export default function LeftPanelContent(props) {
     //     z: 0
     // })
 
-    const {
-        socket,
-    } = useSocketStore(state => ({
-        socket: state.socket,
-    }));
+    // const {
+    //     socket,
+    // } = useSocketStore(state => ({
+    //     socket: state.socket,
+    // }));
 
     return (
         <div className='w-100' id="left-panel-content">
@@ -140,8 +152,7 @@ export default function LeftPanelContent(props) {
                         >
                             <ArticlesButton
                                 small
-                                className="w-100"
-                                active={isFullscreen}
+                                className="w-100"                                
                                 onClick={() => {
                                     setShowSettingsModal(true)
                                 }}
@@ -164,8 +175,9 @@ export default function LeftPanelContent(props) {
                         <ArticlesButton
                             small
                             className="w-50"
+                            active={sidebar}
                             onClick={() => {
-
+                                toggleSidebar()
                             }}
                         >
                             <i className="fad fa-chevron-square-right"></i>
@@ -231,7 +243,7 @@ export default function LeftPanelContent(props) {
             </div> */}
 
             {/* Peer Details */}
-            <PeerDetails />
+            <PeerDetails kickPlayer={kickPlayer} />
 
             {/* Touch Controls */}
             <div

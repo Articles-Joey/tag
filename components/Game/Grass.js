@@ -248,6 +248,7 @@ export default function Grass({
                 args={[geometry, null, activeGrassCount]}
                 castShadow 
                 receiveShadow
+                frustumCulled={false}
             >
                 <meshStandardMaterial side={THREE.DoubleSide} color={color} />
             </instancedMesh>
