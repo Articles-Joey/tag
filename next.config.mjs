@@ -2,6 +2,7 @@
 const nextConfig = {
     poweredByHeader: false,
     reactCompiler: true,
+    // reactStrictMode: false,
     images: {
         // domains: ['cdn.articles.media', 'articles-website.s3.amazonaws.com', 'd3bzp9rk94ifwy.cloudfront.net'],
         remotePatterns: [

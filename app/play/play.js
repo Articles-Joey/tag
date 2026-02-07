@@ -103,6 +103,16 @@ export default function TagGamePage() {
                     conn.on('open', () => {
                         console.log('Client connected: ' + conn.peer);
                         connectionsRef.current[conn.peer] = conn;
+
+                        // New player joined — reload scene on host
+                        reloadSceneRef.current();
+
+                        // Tell all existing clients to reload their scene too
+                        Object.values(connectionsRef.current).forEach(c => {
+                            if (c.open) {
+                                c.send({ type: 'reloadScene' });
+                            }
+                        });
                     });
                     conn.on('data', (msg) => {
                         if (msg.type === 'playerUpdate') {
@@ -164,6 +174,11 @@ export default function TagGamePage() {
                                 console.log('You have been kicked by the host.');
                                 conn.close();
                                 router.push('/');
+                                return;
+                            }
+                            if (data.type === 'reloadScene') {
+                                console.log('Host requested scene reload (new player joined)');
+                                reloadSceneRef.current();
                                 return;
                             }
                             if (data.type === 'gameState') {
@@ -301,6 +316,10 @@ export default function TagGamePage() {
     const reloadScene = () => {
         setSceneKey((prevKey) => prevKey + 1);
     };
+
+    // Ref so peer callbacks can call the latest reloadScene without stale closures
+    const reloadSceneRef = useRef(reloadScene);
+    reloadSceneRef.current = reloadScene;
 
     const { reload } = useKeyboard()
     useEffect(() => {
