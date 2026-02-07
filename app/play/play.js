@@ -20,7 +20,7 @@ import { useControllerStore } from '@/hooks/useControllerStore';
 // import TouchControls from 'app/(site)/community/games/glass-ceiling/components/UI/TouchControls';
 import { useLocalStorageNew } from '@/hooks/useLocalStorageNew';
 import LeftPanelContent from '@/components/UI/LeftPanel';
-import { useSocketStore } from '@/hooks/useSocketStore';
+// import { useSocketStore } from '@/hooks/useSocketStore';
 import SprintMeter from '@/components/UI/SprintMeter';
 import { useKeyboard } from "@/hooks/useKeyboard";
 import { usePeerStore } from '@/hooks/usePeerStore';
@@ -59,8 +59,6 @@ export default function TagGamePage() {
 
     // const [ cameraMode, setCameraMode ] = useState('Player')
 
-    const [players, setPlayers] = useState([])
-
     // PeerJS Refs
     const connectionsRef = useRef({});
 
@@ -68,13 +66,17 @@ export default function TagGamePage() {
     const setPeer = usePeerStore(state => state.setPeer)
     const isHost = usePeerStore(state => state.isHost)
     const setIsHost = usePeerStore(state => state.setIsHost)
-    const gameState = usePeerStore(state => state.gameState)
+    // const gameState = usePeerStore(state => state.gameState) // Removed to prevent re-renders
     const setGameState = usePeerStore(state => state.setGameState)
     const addBannedId = usePeerStore(state => state.addBannedId)
+    const setDisplayId = usePeerStore(state => state.setDisplayId)
+
+    const initializingRef = useRef(false);
 
     useEffect(() => {
 
-        if (!server && !peer) {
+        if (!server && !peer && !initializingRef.current) {
+            initializingRef.current = true;
             const initHost = async () => {
                 const { default: Peer } = await import('peerjs');
                 // Generate 4 character random ID
@@ -86,6 +88,7 @@ export default function TagGamePage() {
                     if (!peer) { // Double check to avoid race conditions
                         setPeer(newPeer);
                         setIsHost(true);
+                        setDisplayId(id);
                     }
                 });
 
@@ -137,7 +140,8 @@ export default function TagGamePage() {
             initHost();
         }
 
-        if (server && !peer) {
+        if (server && !peer && !initializingRef.current) {
+            initializingRef.current = true;
             const initClient = async () => {
                 const { default: Peer } = await import('peerjs');
                 const id = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -148,6 +152,7 @@ export default function TagGamePage() {
                     if (!peer) {
                         setPeer(newPeer);
                         setIsHost(false);
+                        setDisplayId(server);
 
                         const conn = newPeer.connect(server);
                         conn.on('open', () => {
@@ -190,77 +195,72 @@ export default function TagGamePage() {
             const myId = peer.id;
 
             if (isHost) {
-                // Host: Update self and broadcast
-                const currentState = usePeerStore.getState().gameState;
-                let players = [...(currentState.players || [])];
-                const index = players.findIndex(p => p.id === myId);
-                const newPlayer = { id: myId, position: myPosition, rotation: myRotation, action: myAction, nickname: myNickname };
+                let broadcastState = null;
 
-                if (index > -1) {
-                    players[index] = newPlayer;
-                } else {
-                    players.push(newPlayer);
-                }
+                // Host: Update self, run tag logic, and broadcast using FUNCTIONAL update
+                // to avoid race conditions with incoming client data
+                setGameState(prev => {
+                    const players = [...(prev.players || [])];
+                    let itPlayerId = prev.itPlayerId || myId; // Keep existing IT or default
 
-                let itPlayerId = currentState.itPlayerId || myId; // Default to host if not set
+                    // 1. Update Host Data
+                    const index = players.findIndex(p => p.id === myId);
+                    const newPlayer = { id: myId, position: myPosition, rotation: myRotation, action: myAction, nickname: myNickname };
 
-                // Debug distance when I am not IT
-                if (itPlayerId !== myId) {
-                    const itPlayer = players.find(p => p.id === itPlayerId);
-                    const me = players.find(p => p.id === myId);
-                    if (itPlayer && me && itPlayer.position && me.position) {
-                        const dx = me.position[0] - itPlayer.position[0];
-                        const dy = me.position[1] - itPlayer.position[1];
-                        const dz = me.position[2] - itPlayer.position[2];
-                        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                        // console.log(`Distance to IT (${itPlayerId}): ${dist.toFixed(2)}`);
-                    }
-                }
-
-                // Tag Logic
-                if (Date.now() > lastTagTime.current + 3000) {
-                    const currentItPlayer = players.find(p => p.id === itPlayerId);
-
-                    if (currentItPlayer && currentItPlayer.position) {
-                        // Check collisions with other players
-                        // Use find to only trigger one tag per tick and avoid loop mutation issues
-                        const taggedPlayer = players.find(p => {
-                            if (p.id === itPlayerId) return false; // Don't tag self
-                            if (!p.position) return false;
-
-                            const dx = p.position[0] - currentItPlayer.position[0];
-                            const dy = p.position[1] - currentItPlayer.position[1];
-                            const dz = p.position[2] - currentItPlayer.position[2];
-                            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-                            return dist < 1.0;
-                        });
-
-                        if (taggedPlayer) {
-                            console.log(`Tag Event! ${itPlayerId} tagged ${taggedPlayer.id}`);
-                            itPlayerId = taggedPlayer.id;
-                            lastTagTime.current = Date.now();
-                        }
-
+                    if (index > -1) {
+                        players[index] = { ...players[index], ...newPlayer };
                     } else {
-                        // If IT player left or is invalid, reset to Host
-                        if (!currentItPlayer && players.length > 0) {
-                            console.log("IT player lost, resetting to Host");
-                            itPlayerId = myId;
+                        players.push(newPlayer);
+                    }
+
+                    // 2. Tag Logic (Moved inside to use fresh 'players' and 'itPlayerId')
+                    if (Date.now() > lastTagTime.current + 3000) {
+                        const currentItPlayer = players.find(p => p.id === itPlayerId);
+
+                        if (currentItPlayer && currentItPlayer.position) {
+                            const taggedPlayer = players.find(p => {
+                                if (p.id === itPlayerId) return false;
+                                if (!p.position) return false;
+
+                                const dx = p.position[0] - currentItPlayer.position[0];
+                                const dy = p.position[1] - currentItPlayer.position[1];
+                                const dz = p.position[2] - currentItPlayer.position[2];
+                                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                                return dist < 1.0;
+                            });
+
+                            if (taggedPlayer) {
+                                console.log(`Tag Event! ${itPlayerId} tagged ${taggedPlayer.id}`);
+                                itPlayerId = taggedPlayer.id;
+                                lastTagTime.current = Date.now();
+                            }
+                        } else {
+                            if (!currentItPlayer && players.length > 0) {
+                                console.log("IT player lost, resetting to Host");
+                                itPlayerId = myId;
+                            }
                         }
                     }
+
+                    // 3. Construct New State
+                    const newState = { ...prev, players, itPlayerId };
+                    
+                    // Capture for broadcast
+                    broadcastState = newState;
+                    
+                    return newState;
+                });
+
+                // Broadcast the state we just calculated
+                if (broadcastState) {
+                    Object.values(connectionsRef.current).forEach(conn => {
+                        if (conn.open) {
+                            conn.send({ type: 'gameState', state: broadcastState });
+                        }
+                    });
                 }
 
-                const newState = { ...currentState, players, itPlayerId };
-
-                setGameState(newState);
-
-                // Broadcast
-                Object.values(connectionsRef.current).forEach(conn => {
-                    if (conn.open) {
-                        conn.send({ type: 'gameState', state: newState });
-                    }
-                });
             } else {
                 // Client: Send position to host
                 const hostConn = connectionsRef.current['host'];
@@ -326,9 +326,9 @@ export default function TagGamePage() {
     let panelProps = {
         kickPlayer,
         // server,
-        players,
-        touchControlsEnabled,
-        setTouchControlsEnabled,
+        // players,
+        // touchControlsEnabled,
+        // setTouchControlsEnabled,
         reloadScene,
         // controllerState,
         // isFullscreen,
@@ -419,10 +419,10 @@ export default function TagGamePage() {
 
                 <GameCanvas
                     key={sceneKey}
-                    gameState={gameState}
+                    // gameState={gameState} // Removed to prevent unnecessary re-renders of Canvas/Physics
                     // playerData={playerData}
                     // setPlayerData={setPlayerData}
-                    players={players}
+                    // players={players}
                 />
 
             </div>

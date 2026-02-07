@@ -1,7 +1,14 @@
+import { usePeerStore } from "@/hooks/usePeerStore"
 import { useTagGameStore } from "@/hooks/useTagGameStore"
 
 export default function SprintMeter() {
+
     const sprintEnergy = useTagGameStore(state => state.sprintEnergy)
+    
+    const gameState = usePeerStore(state => state.gameState)
+    const peer = usePeerStore(state => state.peer)
+
+    const isIt = gameState?.itPlayerId && peer?.id && gameState.itPlayerId === peer.id
 
     // Calculate percentage (0 to 100)
     // Energy is 0 to 5.
@@ -16,11 +23,11 @@ export default function SprintMeter() {
             width: '200px',
             height: '20px',
             backgroundColor: 'rgba(0,0,0,0.5)',
-            border: '2px solid white',
+            border: isIt ? '2px solid red' : '2px solid white',
             borderRadius: '10px',
             overflow: 'hidden',
-             pointerEvents: 'none', // Allow clicking through
-             zIndex: 100 // Ensure visibility
+            pointerEvents: 'none', // Allow clicking through
+            zIndex: 100 // Ensure visibility
         }}>
             <div style={{
                 width: `${percentage}%`,

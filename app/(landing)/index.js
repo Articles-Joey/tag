@@ -17,6 +17,7 @@ import { GamepadKeyboard, PieMenu } from '@articles-media/articles-gamepad-helpe
 
 import useUserDetails from '@articles-media/articles-dev-box/useUserDetails';
 import useUserToken from '@articles-media/articles-dev-box/useUserToken';
+import { usePeerStore } from '@/hooks/usePeerStore';
 
 const game_key = 'tag'
 const game_name = 'Tag'
@@ -30,12 +31,13 @@ export default function TagGameLandingPage() {
     const setShowInfoModal = useStore((state) => state.setShowInfoModal);
     const setShowSettingsModal = useStore((state) => state.setShowSettingsModal);
     const setShowCreditsModal = useStore((state) => state.setShowCreditsModal);
+    const resetPeerStore = usePeerStore(state => state.reset);
 
     const [joinGame, setJoinGame] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
 
     useEffect(() => {
-
+        resetPeerStore();
         setIsMounted(true)
 
     }, [])

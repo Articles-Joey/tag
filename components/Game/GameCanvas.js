@@ -42,8 +42,8 @@ import { FPV } from "./FPV";
 import Ground from "./Ground";
 import Log from "./Log";
 import Dummy from "./Dummy";
-import { memo } from "react";
-import BotPlayer from "./BotPlayer";
+import { memo, useMemo } from "react";
+// import BotPlayer from "./BotPlayer";
 import Trees from "./Trees";
 import Grass from "./Grass";
 import Players from "./Players";
@@ -53,7 +53,7 @@ import Barns from "./Barns";
 import { useStore } from "@/hooks/useStore";
 // import { useStore } from "@/hooks/useStore";
 
-function GameCanvas(props) {
+function GameCanvas() {
 
     // const GPUTier = useDetectGPU()
 
@@ -86,6 +86,11 @@ function GameCanvas(props) {
     const debug = useTagGameStore(state => state.debug)
 
     const darkMode = useStore((state) => state.darkMode);
+
+    const physicsProps = useMemo(() => ({
+        gravity: [0, -10, 0],
+        defaultContactMaterial: { friction: 0, restitution: 0 }
+    }), [])
 
     return (
         <Canvas shadows id="game-canvas" camera={{ position: [-10, 40, 40], fov: 50 }}>
@@ -129,8 +134,8 @@ function GameCanvas(props) {
             }
 
             <Physics
-                gravity={[0, -10, 0]}
-                defaultContactMaterial={{ friction: 0, restitution: 0 }}
+                gravity={physicsProps.gravity}
+                defaultContactMaterial={physicsProps.defaultContactMaterial}
                 iterations={20}
                 tolerance={0.0001}
             >

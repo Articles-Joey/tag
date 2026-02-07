@@ -19,7 +19,7 @@ export const useStore = create()(
       setDarkMode: (newValue) => set({ darkMode: newValue }),
       toggleDarkMode: () => set({ darkMode: !get().darkMode }),
 
-      sidebar: false,
+      sidebar: true,
       setSidebar: (value) => set({ sidebar: value }),
       toggleSidebar: () => set({ sidebar: !get().sidebar }),
 
@@ -48,6 +48,7 @@ export const useStore = create()(
     }),
     {
       name: 'tag-game-storage', // name of the item in the storage (must be unique)
+      version: 1,
       // storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
       onRehydrateStorage: () => (state) => {
         state.setHasHydrated(true)

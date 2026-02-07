@@ -65,14 +65,24 @@ function PlayerBase() {
     // Track how many frames we've been "still" vertically to detect ground vs apex
     const groundedFrames = useRef(0)
 
-    const [ref, api] = useSphere(() => ({
-        mass: 1,
-        args: [0.3],
-        type: 'Dynamic',
-        position: [0, 1, 0],
-        fixedRotation: true,
-        angularDamping: 1,
-    }))
+    const [ref, api] = useSphere(() => {
+        // Recover last known position from store if available to prevent reset on re-render
+        const lastPos = useTagGameStore.getState().position;
+        // If lastPos is [0,0,0] (default store state), use spawn point [0,1,0]
+        // Otherwise use the stored position
+        const spawnPos = (lastPos[0] === 0 && lastPos[1] === 0 && lastPos[2] === 0) 
+            ? [0, 1, 0] 
+            : lastPos;
+
+        return {
+            mass: 1,
+            args: [0.3],
+            type: 'Dynamic',
+            position: spawnPos,
+            fixedRotation: true,
+            angularDamping: 1,
+        }
+    })
 
     const setPlayer = useTagGameStore((state) => state.setPlayer);
     const setPosition = useTagGameStore((state) => state.setPosition);

@@ -29,4 +29,19 @@ export const usePeerStore = create((set) => ({
     bannedIds: [],
     addBannedId: (id) => set((state) => ({ bannedIds: [...state.bannedIds, id] })),
 
+    displayId: null,
+    setDisplayId: (newValue) => {
+        set((prev) => ({
+            displayId: newValue
+        }))
+    },
+
+    reset: () => set({
+        isHost: false,
+        peer: null,
+        gameState: { players: [] },
+        bannedIds: [],
+        displayId: null
+    })
+
 }))

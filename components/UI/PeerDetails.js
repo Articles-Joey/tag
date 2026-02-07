@@ -5,9 +5,12 @@ export default function PeerDetails({ kickPlayer }) {
 
     const peer = usePeerStore(state => state.peer)
     const isHost = usePeerStore(state => state.isHost)
+    const displayId = usePeerStore(state => state.displayId)
     const gameState = usePeerStore(state => state.gameState)
 
     if (!peer) return null;
+
+    if (!displayId) return null;
 
     return (
         <div className="card card-articles card-sm">
@@ -20,17 +23,20 @@ export default function PeerDetails({ kickPlayer }) {
                 <div className="d-flex justify-content-between align-items-center border p-1">
 
                     <div>
+
                         <ArticlesButton
                             className={`me-2`}
                             onClick={() => {
                                 navigator.clipboard.writeText(
-                                    window.location.origin + "/play?server=" + peer.id
+                                    window.location.origin + "/play?server=" + displayId
                                 )
                             }}
                         >
                             <i className="fad fa-clipboard me-0"></i>
                         </ArticlesButton>
-                        <span>ID: <span className="fw-bold h5 mb-0 text-primary">{peer.id}</span></span>
+
+                        <span>ID: <span className="fw-bold h5 mb-0 text-primary">{displayId}</span></span>
+
                     </div>
 
                     {isHost && <span className="badge bg-success">HOST</span>}
