@@ -91,7 +91,7 @@ export default function GameInfoModal({
                     <ArticlesButton variant="outline-dark" onClick={() => {
                         setShow(false)
                     }}>
-                        <img src={B.src} className="me-1" alt="Close" />
+                        <img src={B.src} className="controller-only me-1" alt="Close" />
                         Close
                     </ArticlesButton>
 

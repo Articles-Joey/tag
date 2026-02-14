@@ -7,7 +7,8 @@ import { useStore } from "@/hooks/useStore";
 
 import B from "@articles-media/articles-gamepad-helper/dist/img/Xbox UI/B.svg";
 import { useModalNavigation } from "@/hooks/useModalNavigation";
-import { Article } from "@mui/icons-material";
+// import { Article } from "@mui/icons-material";
+// import { useControllerStatus } from "@articles-media/articles-gamepad-helper";
 
 export default function SettingsModal({
     show,
@@ -32,24 +33,33 @@ export default function SettingsModal({
     const elementsRef = useRef([]);
     useModalNavigation(elementsRef, () => setShowModal(false));
 
-    const [isGamepadConnected, setIsGamepadConnected] = useState(false);
+    // const isGamepadConnected = useControllerStatus();
 
-    useEffect(() => {
-        const updateGamepadStatus = () => {
-            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-            const connected = Array.from(gamepads).some(gp => gp !== null);
-            setIsGamepadConnected(connected);
-        };
+    // const [isGamepadConnected, setIsGamepadConnected] = useState(false);
 
-        window.addEventListener("gamepadconnected", updateGamepadStatus);
-        window.addEventListener("gamepaddisconnected", updateGamepadStatus);
-        updateGamepadStatus();
+    // useEffect(() => {
+    //     const updateGamepadStatus = () => {
+    //         const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    //         const connected = Array.from(gamepads).some(gp => gp !== null);
+    //         console.log("Gamepad status:", connected);
+    //         setIsGamepadConnected(connected);
+    //     };
 
-        return () => {
-            window.removeEventListener("gamepadconnected", updateGamepadStatus);
-            window.removeEventListener("gamepaddisconnected", updateGamepadStatus);
-        }
-    }, []);
+    //     // window.ongamepaddisconnected = (event) => {
+    //     //     console.log("Lost connection with the gamepad.");
+    //     //     console.log("Gamepad object:", event.gamepad);
+    //     //     // Update game state as needed
+    //     // };
+
+    //     window.addEventListener("gamepadconnected", updateGamepadStatus);
+    //     window.addEventListener("gamepaddisconnected", updateGamepadStatus);
+    //     updateGamepadStatus();
+
+    //     return () => {
+    //         window.removeEventListener("gamepadconnected", updateGamepadStatus);
+    //         window.removeEventListener("gamepaddisconnected", updateGamepadStatus);
+    //     }
+    // }, []);
 
     return (
         <>
@@ -188,6 +198,11 @@ export default function SettingsModal({
                                         defaultControllerKey: 'RT',
                                     },
                                     {
+                                        action: 'Jump',
+                                        defaultKeyboardKey: 'Space',
+                                        defaultControllerKey: 'A',
+                                    },
+                                    {
                                         action: 'Camera Control Toggle',
                                         defaultKeyboardKey: 'V',
                                         defaultControllerKey: 'Y',
@@ -205,9 +220,9 @@ export default function SettingsModal({
 
                                                 <div className="badge badge-hover bg-dark border me-1">{obj.defaultKeyboardKey}</div>
 
-                                                {isGamepadConnected && obj.defaultControllerKey &&
-                                                    <div className="badge badge-hover bg-primary border me-1">{obj.defaultControllerKey}</div>
-                                                }
+                                                {/* {isGamepadConnected && obj.defaultControllerKey && */}
+                                                    <div className="controller-only badge badge-hover bg-primary border me-1">{obj.defaultControllerKey}</div>
+                                                {/* } */}
 
                                                 <ArticlesButton
                                                     className=""
@@ -252,7 +267,7 @@ export default function SettingsModal({
                                 </div>
 
                                 <Form.Label className="mb-0">Game Volume - {audioSettings?.soundEffectsVolume}</Form.Label>
-                                <Form.Range 
+                                <Form.Range
                                     value={audioSettings?.soundEffectsVolume}
                                     onChange={(e) => setAudioSettings({
                                         ...audioSettings,
@@ -260,7 +275,7 @@ export default function SettingsModal({
                                     })}
                                 />
                                 <Form.Label className="mb-0">Music Volume - {audioSettings?.backgroundMusicVolume}</Form.Label>
-                                <Form.Range 
+                                <Form.Range
                                     value={audioSettings?.backgroundMusicVolume}
                                     onChange={(e) => setAudioSettings({
                                         ...audioSettings,
@@ -295,7 +310,7 @@ export default function SettingsModal({
                 <Modal.Footer className="justify-content-between">
 
                     <ArticlesButton
-                        variant="outline-danger ms-3"
+                        variant="outline-danger"
                         onClick={() => {
                             setShow(false)
                         }}
@@ -309,7 +324,7 @@ export default function SettingsModal({
                             setShow(false)
                         }}
                     >
-                        <img src={B.src} className="me-1" alt="Close" />
+                        <img src={B.src} className="controller-only me-1" alt="Close" />
                         Close
                     </ArticlesButton>
 

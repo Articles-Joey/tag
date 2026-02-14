@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@articles-media/articles-dev-box": "^1.0.15",
-    "@articles-media/articles-gamepad-helper": "^0.0.8",
+    "@articles-media/articles-gamepad-helper": "^0.0.9",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.7",
@@ -20,7 +20,7 @@
     "@react-three/cannon": "^6.6.0",
     "@react-three/drei": "^10.5.0",
     "@react-three/fiber": "^9.2.0",
-    "axios": "^1.13.4",
+    "axios": "^1.13.5",
     "babel-plugin-react-compiler": "^1.0.0",
     "bootstrap": "^5.3.8",
     "classnames": "^2.5.1",
