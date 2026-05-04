@@ -2,42 +2,33 @@ import Link from "next/link";
 
 import { Dropdown, DropdownButton } from "react-bootstrap";
 
-// import ROUTES from '@/components/constants/routes';
-// import { useGameStore } from "../hooks/useGameStore";
 import ArticlesButton from "@/components/UI/Button";
 
 import ControllerPreview from "@/components/ControllerPreview";
-import { useSocketStore } from "@/hooks/useSocketStore";
-// import { useState } from "react";
 import { useTagGameStore } from "@/hooks/useTagGameStore";
 import { useStore } from "@/hooks/useStore";
+import { usePeerStore } from "@/hooks/usePeerStore";
 import PeerDetails from "./PeerDetails";
+import MapSelector from "./MapSelector";
 import useFullscreen from "@/hooks/useFullScreen";
-import { set } from "date-fns";
 import TouchControlsPanel from "./TouchControlsPanel";
+
+import GameMenuPrimaryButtonGroup from '@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup';
 
 export default function LeftPanelContent(props) {
 
     const { isFullscreen, requestFullscreen, exitFullscreen } = useFullscreen();
 
-    const {
-        kickPlayer,
-        // server,
-        // players,
-        // touchControlsEnabled,
-        // setTouchControlsEnabled,
-        reloadScene,
-        controllerState,
-        // isFullscreen,
-        // requestFullscreen,
-        // exitFullscreen,
-        // setShowMenu
-    } = props;
+    const { controllerState } = props;
+
+    const kickPlayer = usePeerStore(state => state.kickPlayer);
+    const handleMapChange = usePeerStore(state => state.handleMapChange);
 
     const setShowSettingsModal = useStore((state) => state.setShowSettingsModal);
     const setShowMenu = useStore(state => state.setShowMenu);
     const darkMode = useStore((state) => state.darkMode);
     const toggleDarkMode = useStore((state) => state.toggleDarkMode);
+    const reloadScene = useStore(state => state.reloadScene);
 
     const sidebar = useStore(state => state.sidebar);
     const toggleSidebar = useStore(state => state.toggleSidebar);
@@ -97,73 +88,11 @@ export default function LeftPanelContent(props) {
 
                     <div className="d-flex flex-wrap">
 
-                        <Link
-                            href={'/'}
-                            className="w-50"
-                        >
-                            <ArticlesButton
-                                className='w-100'
-                                small
-                            >
-                                <i className="fad fa-arrow-alt-square-left"></i>
-                                <span>Leave Game</span>
-                            </ArticlesButton>
-                        </Link>
+                        <GameMenuPrimaryButtonGroup
+                            useStore={useStore}
+                            type="GameMenu"
+                        />
 
-                        <ArticlesButton
-                            small
-                            className="w-50"
-                            active={isFullscreen}
-                            onClick={() => {
-                                if (isFullscreen) {
-                                    exitFullscreen()
-                                } else {
-                                    requestFullscreen('tag-game-page')
-                                }
-                            }}
-                        >
-                            {isFullscreen && <span>Exit </span>}
-                            {!isFullscreen && <span><i className='fad fa-expand'></i></span>}
-                            <span>Fullscreen</span>
-                        </ArticlesButton>
-
-                        <div
-                            className="d-flex w-50"
-                        >
-                            <ArticlesButton
-                                small
-                                className="w-100"
-                                onClick={() => {
-                                    setShowSettingsModal(true)
-                                }}
-                            >
-                                <i className="fad fa-cog"></i>
-                                <span>Settings</span>
-                            </ArticlesButton>
-                            <ArticlesButton
-                                small
-                                className=""
-                                active={darkMode}
-                                onClick={() => {
-                                    toggleDarkMode()
-                                }}
-                            >
-                                <i className="fad fa-sun"></i>
-                            </ArticlesButton>
-                        </div>
-
-                        <ArticlesButton
-                            small
-                            className="w-50"
-                            active={sidebar}
-                            onClick={() => {
-                                toggleSidebar()
-                                setShowMenu(false)
-                            }}
-                        >
-                            <i className="fad fa-chevron-square-right"></i>
-                            Sidebar
-                        </ArticlesButton>
                     </div>
 
                 </div>
@@ -223,6 +152,9 @@ export default function LeftPanelContent(props) {
                 </div>
             </div> */}
 
+            {/* Map Selection */}
+            <MapSelector onMapChange={handleMapChange} />
+
             {/* Peer Details */}
             <PeerDetails kickPlayer={kickPlayer} />
 
@@ -244,7 +176,7 @@ export default function LeftPanelContent(props) {
                             <ArticlesButton
                                 size="sm"
                                 className="w-50"
-                                onClick={reloadScene}
+                                onClick={() => reloadScene()}
                             >
                                 <i className="fad fa-redo"></i>
                                 Reload Game
@@ -253,7 +185,7 @@ export default function LeftPanelContent(props) {
                             <ArticlesButton
                                 size="sm"
                                 className="w-50"
-                                onClick={reloadScene}
+                                onClick={() => reloadScene()}
                             >
                                 <i className="fad fa-redo"></i>
                                 Reset Camera

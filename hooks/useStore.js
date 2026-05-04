@@ -1,46 +1,23 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
+import typicalZustandStoreExcludes from '@articles-media/articles-dev-box/typicalZustandStoreExcludes';
+import typicalZustandStoreStateSlice from '@articles-media/articles-dev-box/typicalZustandStoreStateSlice';
+
+import generateRandomNickname from '@/util/generateRandomNickname';
+
 export const useStore = create()(
   persist(
     (set, get) => ({
 
-      _hasHydrated: false,
-      setHasHydrated: (state) => {
-        set({
-          _hasHydrated: state
-        });
+      ...typicalZustandStoreStateSlice(set, get, generateRandomNickname),
+
+      // TODO - Dev box now has this
+      toggleShowMenu: () => {
+        set((prev) => ({
+          showMenu: !prev.showMenu
+        }))
       },
-
-      nickname: "",
-      setNickname: (newValue) => set({ nickname: newValue }),
-
-      darkMode: null,
-      setDarkMode: (newValue) => set({ darkMode: newValue }),
-      toggleDarkMode: () => set({ darkMode: !get().darkMode }),
-
-      sidebar: true,
-      setSidebar: (value) => set({ sidebar: value }),
-      toggleSidebar: () => set({ sidebar: !get().sidebar }),
-
-      showMenu: false,
-      setShowMenu: (value) => set({ showMenu: value }),
-      toggleShowMenu: () => set({ showMenu: !get().showMenu }),
-
-      showCreditsModal: false,
-      setShowCreditsModal: (value) => set({ showCreditsModal: value }),
-
-      showInfoModal: false,
-      setShowInfoModal: (value) => set({ showInfoModal: value }),
-
-      showSettingsModal: false,
-      setShowSettingsModal: (value) => set({ showSettingsModal: value }),
-
-      showInviteModal: false,
-      setShowInviteModal: (value) => set({ showInviteModal: value }),
-
-      graphicsQuality: "High",
-      setGraphicsQuality: (value) => set({ graphicsQuality: value }),
 
       touchControlsEnabled: false,
       setTouchControlsEnabled: (value) => set({ touchControlsEnabled: value }),
@@ -55,30 +32,18 @@ export const useStore = create()(
     }),
     {
       name: 'tag-game-storage', // name of the item in the storage (must be unique)
-      version: 1,
+      version: 2,
       // storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
-      onRehydrateStorage: () => (state) => {
-        state.setHasHydrated(true)
+      onRehydrateStorage: (state) => {
+        return () => state.setHasHydrated(true)
       },
-      partialize: (state) => ({
-
-        darkMode: state.darkMode,
-        sidebar: state.sidebar,
-        showMenu: state.showMenu,
-        
-        // theme: state.theme,
-        nickname: state.nickname,
-
-        // renderMode: state.renderMode,
-
-        touchControlsEnabled: state.touchControlsEnabled,
-        // cameraShakeEnabled: state.cameraShakeEnabled,
-
-        // debug: state.debug,
-        // devDebugPanel: state.devDebugPanel,
-        // debugTab: state.debugTab,
-        audioSettings: state.audioSettings,
-      }),
+      partialize: (state) =>
+        Object.fromEntries(
+          Object.entries(state).filter(([key]) => ![
+            ...typicalZustandStoreExcludes,
+            'friendsModal',
+          ].includes(key))
+        ),
     },
   ),
 )

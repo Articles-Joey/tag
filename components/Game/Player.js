@@ -15,6 +15,13 @@ const JUMP_FORCE = 4;
 const SPEED = 4;
 const CONTROLLER_DEADZONE = 0.15;
 const LOOK_SENSITIVITY = 0.04;
+const THIRD_PERSON_MIN_DISTANCE = 2;
+const THIRD_PERSON_MAX_DISTANCE = 20;
+const THIRD_PERSON_DEFAULT_DISTANCE = 6;
+const THIRD_PERSON_HEIGHT = 0.5;
+const GROUND_Y = -1;
+const CAMERA_GROUND_OFFSET = 0.3;
+const SCROLL_SENSITIVITY = 0.5;
 
 function PlayerBase() {
 
@@ -95,6 +102,8 @@ function PlayerBase() {
     
     // Controller specific refs
     const prevToggleView = useRef(false);
+    const prevCameraView = useRef(false);
+    const cameraDistanceRef = useRef(THIRD_PERSON_DEFAULT_DISTANCE);
 
     // Standard Gamepad Mapping (Xbox 360 / One / DualShock)
     // 0: A/Cross, 1: B/Circle, 2: X/Square, 3: Y/Triangle
@@ -117,11 +126,33 @@ function PlayerBase() {
         }
     }, [moveBackward, moveForward, moveRight, moveLeft, isJumping, shift])
 
-    const [isThirdPerson, setIsThirdPerson] = useState(false)
+    const isThirdPerson = useTagGameStore(state => state.isThirdPerson)
+    const toggleThirdPerson = useTagGameStore(state => state.toggleThirdPerson)
+    const setCameraDistance = useTagGameStore(state => state.setCameraDistance)
 
+    // Toggle third person view only on key press, not release (avoids double-toggle)
     useEffect(() => {
-        if (cameraView) setIsThirdPerson((prev) => !prev)
+        if (cameraView && !prevCameraView.current) {
+            useTagGameStore.getState().toggleThirdPerson()
+        }
+        prevCameraView.current = cameraView
     }, [cameraView])
+
+    // Scroll wheel to adjust camera distance in third person
+    useEffect(() => {
+        const handleWheel = (e) => {
+            cameraDistanceRef.current = Math.min(
+                THIRD_PERSON_MAX_DISTANCE,
+                Math.max(
+                    THIRD_PERSON_MIN_DISTANCE,
+                    cameraDistanceRef.current + e.deltaY * SCROLL_SENSITIVITY * 0.01
+                )
+            )
+            setCameraDistance(cameraDistanceRef.current)
+        }
+        document.addEventListener('wheel', handleWheel, { passive: true })
+        return () => document.removeEventListener('wheel', handleWheel)
+    }, [setCameraDistance])
 
     const { camera } = useThree()
 
@@ -217,23 +248,39 @@ function PlayerBase() {
 
         // Update the camera position using the global state
         if (isThirdPerson) {
-            const cameraDirection = new Vector3()
-            camera.getWorldDirection(cameraDirection)
-
-            const targetPos = new Vector3(
+            // Player center (target the camera looks at)
+            const playerCenter = new Vector3(
                 pos.current[0],
-                (pos.current[1] / (crouch ? 2 : 1)) + 0.5,
+                (pos.current[1] / (crouch ? 2 : 1)) + THIRD_PERSON_HEIGHT,
                 pos.current[2]
             )
 
-            const offset = cameraDirection.clone().multiplyScalar(-4)
+            // Get camera's forward direction
+            const forward = new Vector3(0, 0, -1).applyEuler(camera.rotation)
 
-            camera.position.copy(targetPos).add(offset)
+            // Desired camera position at current scroll distance
+            let desiredDistance = cameraDistanceRef.current
+            const cameraPos = playerCenter.clone().sub(forward.clone().multiplyScalar(desiredDistance))
+
+            // Prevent camera from going below ground
+            const minY = GROUND_Y + CAMERA_GROUND_OFFSET
+            if (cameraPos.y < minY) {
+                const dir = forward.clone().negate().normalize()
+                if (dir.y < 0) {
+                    const t = (playerCenter.y - minY) / -dir.y
+                    desiredDistance = Math.min(desiredDistance, t)
+                }
+                cameraPos.copy(playerCenter.clone().sub(forward.clone().multiplyScalar(desiredDistance)))
+                cameraPos.y = Math.max(cameraPos.y, minY)
+            }
+
+            camera.position.copy(cameraPos)
+            camera.lookAt(playerCenter)
         } else {
             camera.position.copy(
                 new Vector3(
                     pos.current[0],
-                    (pos.current[1] / (crouch ? 2 : 1)) + 0.4, // Adjust height for crouch, +2 units higher default
+                    (pos.current[1] / (crouch ? 2 : 1)) + 0.4,
                     pos.current[2]
                 )
             );
@@ -292,7 +339,7 @@ function PlayerBase() {
             // Button 3: Y (Toggle View)
             if (gamepad.buttons[3].pressed) {
                 if (!prevToggleView.current) {
-                    setIsThirdPerson(p => !p);
+                    toggleThirdPerson();
                     prevToggleView.current = true;
                 }
             } else {
@@ -348,24 +395,20 @@ function PlayerBase() {
         direction
             .subVectors(frontVector, sideVector)
             .normalize()
-            .multiplyScalar(SPEED * (isSprinting ? 2 : 1))
             .applyEuler(camera.rotation)
 
+        // Zero out Y so looking up/down doesn't slow horizontal movement
+        direction.y = 0
+        direction.normalize().multiplyScalar(SPEED * (isSprinting ? 2 : 1))
+
         if (isMoving) {
-            // Calculate rotation based on movement direction
-            // Math.atan2(x, z) gives the angle relative to "Forward" (Z-axis)
-            // Adjust depending on model orientation. Usually models face +Z or -Z.
-            // If the model faces +Z, and we move +Z (Backward), atan2(0, 1) = 0.
-            // If we move -Z (Forward), atan2(0, -1) = PI.
-            // We'll trust atan2 gives the correct yaw angle for the world velocity.
             const rotation = Math.atan2(direction.x, direction.z);
-            if (modelRef.current) {
-                // Check if we have significant movement to avoid jitter
+            if (!isThirdPerson && modelRef.current) {
                 if (Math.abs(direction.x) > 0.001 || Math.abs(direction.z) > 0.001) {
                     modelRef.current.rotation.y = rotation
-                    setRotation(rotation)
                 }
             }
+            setRotation(Math.atan2(direction.x, direction.z))
         }
 
         // Boundary Checks (Prevent going past -85 and 85)
@@ -403,7 +446,24 @@ function PlayerBase() {
         }
 
         if (modelRef.current) {
-            modelRef.current.position.set(pos.current[0], pos.current[1], pos.current[2])
+            modelRef.current.position.set(pos.current[0], pos.current[1] - 0.45, pos.current[2])
+
+            // Rotate model to face movement direction in third person
+            if (isThirdPerson && isMoving) {
+                const moveDirection = new Vector3()
+                moveDirection
+                    .subVectors(
+                        new Vector3(0, 0, forwardInput),
+                        new Vector3(sideInput, 0, 0)
+                    )
+                    .normalize()
+                    .applyEuler(camera.rotation)
+
+                if (moveDirection.length() > 0) {
+                    const targetRotation = Math.atan2(moveDirection.x, moveDirection.z)
+                    modelRef.current.rotation.y = targetRotation
+                }
+            }
         }
 
     })
@@ -417,7 +477,7 @@ function PlayerBase() {
 
                 <SpacesuitModel
                     scale={0.5}
-                    position={[0, -0.45, 0]}
+                    position={[0, 0, 0]}
                     action={action}
                     speed={speed}
                 />

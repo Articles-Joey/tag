@@ -1,5 +1,7 @@
 "use client";
+import { useAudioStore } from '@/hooks/useAudioStore';
 import { useStore } from '@/hooks/useStore';
+import { useTouchControlsStore } from '@/hooks/useTouchControlsStore';
 import dynamic from 'next/dynamic'
 
 const InfoModal = dynamic(
@@ -8,12 +10,12 @@ const InfoModal = dynamic(
 )
 
 const SettingsModal = dynamic(
-    () => import('@/components/UI/SettingsModal'),
+    () => import('@articles-media/articles-dev-box/SettingsModal'),
     { ssr: false }
 )
 
 const CreditsModal = dynamic(
-    () => import('@/components/UI/CreditsModal'),
+    () => import('@articles-media/articles-dev-box/CreditsModal'),
     { ssr: false }
 )
 
@@ -41,6 +43,44 @@ export default function GlobalClientModals() {
                 <SettingsModal
                     show={showSettingsModal}
                     setShow={setShowSettingsModal}
+                    store={useStore}
+                    useAudioStore={useAudioStore}
+                    useTouchControlsStore={useTouchControlsStore}
+                    // useSocketStore={useSocketStore}
+                    config={{
+                        tabs: {
+                            'Graphics': {
+                                darkMode: true,
+                                landingAnimation: true
+                            },
+                            'Audio': {
+                                sliders: [
+                                    {
+                                        key: "gameVolume",
+                                        label: "Game Volume"
+                                    },
+                                    {
+                                        key: "musicVolume",
+                                        label: "Music Volume"
+                                    }
+                                ]
+                            },
+                            'Controls': {
+                                // defaultKeyBindings: {
+                                //     // moveUp: "W",
+                                //     // moveDown: "S",
+                                //     // moveLeft: "A",
+                                //     // moveRight: "D",
+                                // }
+                            },
+                            'Multiplayer': {
+                                // serverUrl: true,
+                            },
+                            'Other': {
+                                toontownMode: true,
+                            }
+                        }
+                    }}
                 />
             }
 

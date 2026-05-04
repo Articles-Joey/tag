@@ -76,6 +76,12 @@ export const useTagGameStore = create((set) => ({
     setRotation: (rotation) => set({ rotation }),
     setAction: (action) => set({ action }),
 
+    isThirdPerson: false,
+    toggleThirdPerson: () => set((state) => ({ isThirdPerson: !state.isThirdPerson })),
+
+    cameraDistance: 6,
+    setCameraDistance: (cameraDistance) => set({ cameraDistance }),
+
     sprintEnergy: 5,
     setSprintEnergy: (sprintEnergy) => set({ sprintEnergy }),
 

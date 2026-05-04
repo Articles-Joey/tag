@@ -1,5 +1,6 @@
 @use "./components/global.scss" as *;
 @use "./components/buttons.scss" as *;
+@use "./components/camera-zoom-indicator.scss" as *;
 
 @use "./pages/landing" as *;
 @use "./pages/game" as *;
@@ -16,4 +17,12 @@ button {
   font-family: "Gloria Hallelujah", cursive;
   font-weight: 400;
   font-style: normal;
+}
+
+.stats-overlay {
+    position: fixed;
+    top: 0;
+    right: 0 !important;
+    left: initial !important;
+    z-index: 4;
 }

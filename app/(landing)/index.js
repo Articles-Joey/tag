@@ -7,12 +7,26 @@ import dynamic from 'next/dynamic'
 import ArticlesButton from '@/components/UI/Button';
 import { useStore } from '@/hooks/useStore';
 
-import GameScoreboard from '@articles-media/articles-dev-box/GameScoreboard';
-import Ad from '@articles-media/articles-dev-box/Ad';
+// import GameScoreboard from '@articles-media/articles-dev-box/GameScoreboard';
+// import Ad from '@articles-media/articles-dev-box/Ad';
+// const GameScoreboard = dynamic(() =>
+//     import('@articles-media/articles-dev-box/GameScoreboard'),
+//     { ssr: false }
+// );
+const Ad = dynamic(() =>
+    import('@articles-media/articles-dev-box/Ad'),
+    { ssr: false }
+);
+
+import SessionButton from '@articles-media/articles-dev-box/SessionButton';
 const ReturnToLauncherButton = dynamic(() =>
     import('@articles-media/articles-dev-box/ReturnToLauncherButton'),
     { ssr: false }
 );
+
+import NicknameInput from '@articles-media/articles-dev-box/NicknameInput';
+import GameMenuPrimaryButtonGroup from '@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup';
+
 import { GamepadKeyboard, PieMenu } from '@articles-media/articles-gamepad-helper';
 
 import useUserDetails from '@articles-media/articles-dev-box/useUserDetails';
@@ -48,7 +62,7 @@ export default function TagGameLandingPage() {
         isLoading: userTokenLoading,
         mutate: userTokenMutate
     } = useUserToken(
-        "3034"
+        process.env.NEXT_PUBLIC_GAME_PORT
     );
 
     const {
@@ -171,22 +185,9 @@ export default function TagGameLandingPage() {
 
                         <div className="card-header">
 
-                            <div className="form-group articles mb-0">
-                                <label htmlFor="nickname">Nickname</label>
-                                {/* <SingleInput
-                                    value={nickname}
-                                    setValue={setNickname}
-                                /> */}
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="nickname"
-                                    value={nickname}
-                                    onChange={(e) => setNickname(e.target.value)}
-                                ></input>
-                            </div>
-
-                            <div style={{ fontSize: '0.8rem' }}>Visible to all players</div>
+                            <NicknameInput 
+                                useStore={useStore}
+                            />
 
                         </div>
 
@@ -265,100 +266,34 @@ export default function TagGameLandingPage() {
 
                         <div className="card-footer d-flex flex-wrap justify-content-center">
 
-                            <div className='d-flex w-50'>
-                                <ArticlesButton
-                                    className={`w-100`}
-                                    small
-                                    onClick={() => {
-                                        setShowSettingsModal(prev => !prev)
-                                    }}
-                                >
-                                    <i className="fad fa-cog"></i>
-                                    Settings
-                                </ArticlesButton>
-                                <ArticlesButton
-                                    className={``}
-                                    small
-                                    onClick={() => {
-                                        toggleDarkMode()
-                                    }}
-                                >
-                                    <i className="fad fa-sun"></i>
-                                </ArticlesButton>
-                            </div>
-
-                            <ArticlesButton
-                                className={`w-50`}
-                                small
-                                onClick={() => {
-                                    setShowInfoModal({
-                                        game: game_name
-                                    })
-                                }}
-                            >
-                                <i className="fad fa-info-square"></i>
-                                Rules & Controls
-                            </ArticlesButton>
-
-                            <Link
-                                target='_blank'
-                                href={'https://github.com/Articles-Joey/tag'}
-                                className='w-50'
-                            >
-                                <ArticlesButton
-                                    className={`w-100`}
-                                    small
-                                    onClick={() => {
-
-                                    }}
-                                >
-                                    <i className="fab fa-github"></i>
-                                    Github
-                                </ArticlesButton>
-                            </Link>
-
-                            {/* <Link href={'/'} className='w-50'>
-                                <ArticlesButton
-                                    className={`w-100`}
-                                    small
-                                    onClick={() => {
-    
-                                    }}
-                                >
-                                    <i className="fad fa-sign-out fa-rotate-180"></i>
-                                    Leave Game
-                                </ArticlesButton>
-                            </Link> */}
-
-                            <ArticlesButton
-                                className={`w-50`}
-                                small
-                                onClick={() => {
-                                    setShowCreditsModal(true)
-                                }}
-                            >
-                                <i className="fad fa-users"></i>
-                                Credits
-                            </ArticlesButton>
+                            <GameMenuPrimaryButtonGroup 
+                                useStore={useStore}
+                                type="Landing"
+                            />
 
                         </div>
 
                     </div>
 
+                    <SessionButton
+                        port={process.env.NEXT_PUBLIC_GAME_PORT}
+                        friendsButton={true}
+                    />
+
                     <ReturnToLauncherButton />
 
                 </div>
 
-                <GameScoreboard
-                    game={game_name}
+                {/* <GameScoreboard
+                    game={process.env.NEXT_PUBLIC_GAME_NAME}
                     style="Default"
                     darkMode={darkMode ? true : false}
-                />
+                /> */}
 
                 <Ad
                     style="Default"
                     section={"Games"}
-                    section_id={game_name}
+                    section_id={process.env.NEXT_PUBLIC_GAME_NAME}
                     darkMode={darkMode ? true : false}
                     user_ad_token={userToken}
                     userDetails={userDetails}

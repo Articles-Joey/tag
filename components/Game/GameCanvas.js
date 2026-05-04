@@ -1,33 +1,11 @@
 import { Canvas } from "@react-three/fiber"
-import { Sky, useDetectGPU, useTexture, OrbitControls } from "@react-three/drei";
+import { Sky, useDetectGPU, useTexture, OrbitControls, Stats } from "@react-three/drei";
 
 import { NearestFilter, RepeatWrapping, TextureLoader } from "three";
 // import GameGrid from "./GameGrid";
 
 // import Witch from "../../../../../../components/Games/Race Game/PlayerModels/Witch";
 // import { Star } from "../../../../../../components/Games/Race Game/Star";
-
-const texture = new TextureLoader().load(`${process.env.NEXT_PUBLIC_CDN}games/Race Game/grass.jpg`)
-
-const GrassPlane = () => {
-
-    const width = 110; // Set the width of the plane
-    const height = 110; // Set the height of the plane
-
-    texture.magFilter = NearestFilter;
-    texture.wrapS = RepeatWrapping
-    texture.wrapT = RepeatWrapping
-    texture.repeat.set(20, 20)
-
-    return (
-        <>
-            <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
-                <circleGeometry attach="geometry" args={[width, height]} />
-                <meshStandardMaterial attach="material" map={texture} />
-            </mesh>
-        </>
-    );
-};
 
 import Sand from '@/components/Game/Sand';
 // import { Cannon } from "./Models/Cannon";
@@ -39,20 +17,23 @@ import { Debug, Physics } from "@react-three/cannon";
 import { Player } from "./Player";
 import { useTagGameStore } from "@/hooks/useTagGameStore";
 import { FPV } from "./FPV";
-import Ground from "./Ground";
-import Log from "./Log";
-import Dummy from "./Dummy";
 import { memo, useMemo } from "react";
 // import BotPlayer from "./BotPlayer";
-import Trees from "./Trees";
-import Grass from "./Grass";
 import Players from "./Players";
 import ItMarker from "./ItMarker";
-import Obstacles from "./Obstacles";
-import Barns from "./Barns";
 import { useStore } from "@/hooks/useStore";
-import HollowLog from "./HollowLog";
+import { usePeerStore } from "@/hooks/usePeerStore";
 import { degToRad } from "three/src/math/MathUtils";
+
+import ForestMap from "./Maps/ForestMap";
+import DesertMap from "./Maps/DesertMap";
+import RoomMap from "./Maps/RoomMap";
+
+const MapComponents = {
+    Forest: ForestMap,
+    Desert: DesertMap,
+    Room: RoomMap,
+};
 // import { useStore } from "@/hooks/useStore";
 
 function GameCanvas() {
@@ -88,6 +69,12 @@ function GameCanvas() {
     const debug = useTagGameStore(state => state.debug)
 
     const darkMode = useStore((state) => state.darkMode);
+    // const controlType = useStore(state => state.controlType);
+    const showStats = useStore((state) => state?.debugConfig?.showStats);
+
+    const currentMap = usePeerStore(state => state.currentMap);
+
+    const ActiveMap = MapComponents[currentMap] || ForestMap;
 
     const physicsProps = useMemo(() => ({
         gravity: [0, -10, 0],
@@ -96,6 +83,10 @@ function GameCanvas() {
 
     return (
         <Canvas shadows id="game-canvas" camera={{ position: [-10, 40, 40], fov: 50 }}>
+
+            {showStats && <>
+                        <Stats className="stats-overlay" />
+                    </>}
 
             {/* <OrbitControls
             // autoRotate={gameState?.status == 'In Lobby'}
@@ -145,47 +136,18 @@ function GameCanvas() {
                 <Debug
                     scale={debug ? 1 : 0}
                 >
-                    <Ground />
-
-                    <Log
-                        position={[0, 0.25, 10]}
-                        size={[10, 0.5, 0.5]}
-                    />
-
-                    <Log
-                        position={[0, 0.25, 12]}
-                        size={[10, 0.5, 0.5]}
-                    />
-
-                    <Log
-                        position={[0, 0.25, 14]}
-                        size={[10, 0.5, 0.5]}
-                    />
-
-                    <Dummy />
+                    {/* Active map provides ground, obstacles, and decorations */}
+                    <ActiveMap />
 
                     {controlType == "Mouse and Keyboard" &&
                         <Player />
                     }
 
-                    <HollowLog 
-                        position={[10, 1.6, 0]}
-                    />
-
                     <Players />
-
-                    <Obstacles />
 
                     {/* <BotPlayer /> */}
 
                     <ItMarker />
-
-                    {/* Center Dummy */}
-                    <Duck
-                        // position={[0, 0, -10]}                        
-                        position={[10, 3.1, 0]}                
-                        rotation={[0, degToRad(-90), 0]}
-                    />
 
                 </Debug>
 
@@ -213,21 +175,6 @@ function GameCanvas() {
                     rotation={[0, -Math.PI, 0]}
                 />
             </group> */}
-
-            <Barns />
-
-            <Trees />
-
-            <Grass />
-
-            <GrassPlane />
-
-            <Sand
-                receiveShadow
-                args={[200, 200]}
-                rotation={[-Math.PI / 2, 0, 0]}
-                position={[0, -0.1, 0]}
-            />
 
             {/* <ambientLight intensity={5} /> */}
             <spotLight intensity={500} position={[-50, 100, 50]} angle={5} penumbra={1} />
