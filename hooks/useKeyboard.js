@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import useTouchControlsStore from "@/hooks/useTouchControlsStore"
 
 function actionByKey(key) {
 	const keyActionMap = {
@@ -10,12 +11,6 @@ function actionByKey(key) {
         ShiftLeft: 'shift',
         KeyC: 'crouch',
         KeyV: 'cameraView',
-        KeyR: 'reload',
-		Digit1: 'dirt',
-		Digit2: 'grass',
-		Digit3: 'glass',
-		Digit4: 'wood',
-		Digit5: 'log',
 	}
 	return keyActionMap[key]
 }
@@ -30,17 +25,13 @@ export const useKeyboard = () => {
         shift: false,
         crouch: false,
         cameraView: false,
-        reload: false,
-		dirt: false,
-		grass: false,
-		glass: false,
-		wood: false,
-		log: false,
 	})
+
+	const touchControlsEnabled = useTouchControlsStore((state) => state.enabled)
+	const touchControls = useTouchControlsStore((state) => state.touchControls)
 
 	const handleKeyDown = useCallback((e) => {
 		const action = actionByKey(e.code)
-        console.log("test")
 		if (action) {
 			setActions((prev) => {
 				return ({
@@ -53,7 +44,6 @@ export const useKeyboard = () => {
 
 	const handleKeyUp = useCallback((e) => {
 		const action = actionByKey(e.code)
-        console.log("test")
 		if (action) {
 			setActions((prev) => {
 				return ({
@@ -73,5 +63,18 @@ export const useKeyboard = () => {
 		}
 	}, [handleKeyDown, handleKeyUp])
 
-	return actions
+	if (!touchControlsEnabled) {
+		return actions
+	}
+
+	return {
+		...actions,
+		moveForward: actions.moveForward || !!touchControls.up,
+		moveBackward: actions.moveBackward || !!touchControls.down,
+		moveLeft: actions.moveLeft || !!touchControls.left,
+		moveRight: actions.moveRight || !!touchControls.right,
+		jump: actions.jump || !!touchControls.jump,
+		sprint: actions.sprint || !!touchControls.sprint,
+		cameraView: actions.cameraView || !!touchControls.cameraView,
+	}
 }

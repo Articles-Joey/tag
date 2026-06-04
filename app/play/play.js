@@ -7,11 +7,12 @@ import LeftPanelContent from '@/components/UI/LeftPanel';
 import SprintMeter from '@/components/UI/SprintMeter';
 import { useStore } from '@/hooks/useStore';
 import classNames from 'classnames';
-import AudioHandler from '@/components/Game/AudioHandler';
+import AudioHandler from '@/components/Handlers/AudioHandler';
 import CameraZoomIndicator from '@/components/UI/CameraZoomIndicator';
-import PeerLogicHandler from '@/components/PeerLogicHandler';
+import PeerLogicHandler from '@/components/Handlers/PeerLogicHandler';
 
 import GameMenu from '@articles-media/articles-dev-box/GameMenu';
+import TouchControls from '@/components/UI/TouchControls';
 
 const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
     ssr: false,
@@ -19,18 +20,20 @@ const GameCanvas = dynamic(() => import('@/components/Game/GameCanvas'), {
 
 export default function TagGamePage() {
 
-    const { controllerState } = useControllerStore()
+    // const { controllerState } = useControllerStore()
 
     const sceneKey = useStore(state => state.sceneKey);
+    const sidebar = useStore(state => state.sidebar);
+    const showMenu = useStore(state => state.showMenu);
 
     return (
         <div
             className={classNames(
                 `${process.env.NEXT_PUBLIC_GAME_KEY}-game-page`,
                 {
-                    'menu-open': useStore.getState().menuOpen,
+                    'menu-open': showMenu,
                     'fullscreen': useFullscreen().isFullscreen,
-                    'show-sidebar': useStore.getState().sidebar,
+                    'show-sidebar': sidebar,
                 }
             )}
             id={`${process.env.NEXT_PUBLIC_GAME_KEY}-game-page`}
@@ -57,6 +60,8 @@ export default function TagGamePage() {
                 <SprintMeter />
 
                 <CameraZoomIndicator />
+
+                <TouchControls />
 
                 <GameCanvas
                     key={sceneKey}

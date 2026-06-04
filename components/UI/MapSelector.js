@@ -5,6 +5,8 @@ const MAPS = [
     { id: 'Forest', label: 'Forest', icon: 'fa-trees' },
     { id: 'Desert', label: 'Desert', icon: 'fa-sun' },
     { id: 'Room', label: 'Room', icon: 'fa-home' },
+    // Use existing toon assets and components from compatible games to create this - See Move Match
+    // { id: 'ToonTown', label: 'ToonTown', icon: 'fa-paw' },
 ];
 
 export default function MapSelector({ onMapChange }) {

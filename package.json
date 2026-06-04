@@ -1,6 +1,6 @@
 {
   "name": "tag",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": false,
   "homepage": "https://tag.articles.media",
   "scripts": {
@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@articles-media/articles-dev-box": "^1.0.42",
+    "@articles-media/articles-dev-box": "^1.4.2",
     "@articles-media/articles-gamepad-helper": "^0.0.13",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
-    "eslint": "^9.39.2",
+    "eslint": "^10",
     "eslint-config-next": "^16.2.4"
   }
 }

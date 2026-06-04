@@ -12,22 +12,15 @@ export const useStore = create()(
 
       ...typicalZustandStoreStateSlice(set, get, generateRandomNickname),
 
-      // TODO - Dev box now has this
-      toggleShowMenu: () => {
-        set((prev) => ({
-          showMenu: !prev.showMenu
-        }))
-      },
+      // touchControlsEnabled: false,
+      // setTouchControlsEnabled: (value) => set({ touchControlsEnabled: value }),
 
-      touchControlsEnabled: false,
-      setTouchControlsEnabled: (value) => set({ touchControlsEnabled: value }),
-
-      audioSettings: {
-        enabled: true,
-        backgroundMusicVolume: 50,
-        soundEffectsVolume: 50,
-      },
-      setAudioSettings: (newValue) => set({ audioSettings: newValue }),
+      // audioSettings: {
+      //   enabled: true,
+      //   backgroundMusicVolume: 50,
+      //   soundEffectsVolume: 50,
+      // },
+      // setAudioSettings: (newValue) => set({ audioSettings: newValue }),
 
     }),
     {
@@ -41,7 +34,6 @@ export const useStore = create()(
         Object.fromEntries(
           Object.entries(state).filter(([key]) => ![
             ...typicalZustandStoreExcludes,
-            'friendsModal',
           ].includes(key))
         ),
     },

@@ -61,7 +61,7 @@ export default function PeerDetails({ kickPlayer }) {
                                     <span className={player.id === peer.id ? "fw-bold" : ""}>
                                         {player.nickname || player.id} {player.id === peer.id ? "(You)" : ""}
                                     </span>
-                                    <span className="badge bg-primary ms-2" style={{ fontSize: '0.7em' }}>Player</span>
+                                    {/* <span className="badge bg-primary ms-2" style={{ fontSize: '0.7em' }}>Player</span> */}
                                 </div>
                                 
                                 <div className="d-flex align-items-center">

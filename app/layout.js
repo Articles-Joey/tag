@@ -56,11 +56,12 @@ export default function RootLayout({ children }) {
       // className={`${geistSans.variable} ${geistMono.variable}`}
       >
 
+        <LayoutClient />
+
         <Suspense>
           {/* <SocketLogicHandler /> */}
-          <LayoutClient />
-          <DarkModeHandler />
-          <GlobalClientModals />
+          {/* TODO - Move <PeerLogicHandler /> here? This is new standard with other games */}
+          {/* <PeerLogicHandler /> */}
         </Suspense>
 
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>

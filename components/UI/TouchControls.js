@@ -1,218 +1,250 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
-import ArticlesButton from "@/components/UI/Button"
-import { useControlsStore, useGameStore } from "@/hooks/useGameStore"
+import ArticlesButton from "@/components/UI/Button";
+import useTouchControlsStore from "@/hooks/useTouchControlsStore";
+import { useStore } from "@/hooks/useStore";
 
-const arePropsEqual = (prevProps, nextProps) => {
-    // Compare all props for equality
-    return JSON.stringify(prevProps) === JSON.stringify(nextProps);
-};
+function TouchControlsBase() {
+    const touchControlsEnabled = useTouchControlsStore((state) => state.enabled);
+    const touchControls = useTouchControlsStore((state) => state.touchControls);
+    const setTouchControls = useTouchControlsStore((state) => state.setTouchControls);
+    const sidebar = useStore((state) => state.sidebar);
 
-function JumpButtonBase() {
+    const [isMountReady, setIsMountReady] = useState(false);
 
-    const {
-        touchControls, setTouchControls
-    } = useControlsStore()
-
-    return (
-        <ArticlesButton
-            onClick={() => {
-                console.log("Jump!")
-                setTouchControls({
-                    ...touchControls,
-                    jump: true
-                })
-            }}
-        >
-            Jump
-        </ArticlesButton>
-    )
-}
-
-const JumpButton = memo(JumpButtonBase, arePropsEqual);
-
-function TouchControlsBase(props) {
-
-    const {
-        touchControlsEnabled,
-    } = props;
-
-    const [nippleCreated, setNippleCreated] = useState(false)
-
-    const [nStart, setnStart] = useState(false)
-    const [nDirection, setnDirection] = useState(false)
-
-    const {
-        touchControls, setTouchControls
-    } = useControlsStore()
-
-    function startNipple() {
-
-        // console.log("n", nipplejs)
-
-        // return
-
-        var options = {
-            zone: document.getElementById('zone_joystick'),
-            // threshold: 0.5
-            // lockX: true,
-        };
-
-        // var manager = nipplejs.create(options);
-        var manager = require('nipplejs').create(options);
-
-        setNippleCreated(true)
-
-        let dragDistance
-        let dragDirection
-
-        manager.on('start end', function (evt, data) {
-            // dump(evt.type);
-            // debug(data);
-            console.log("1", evt.type)
-
-            if (evt.type == 'start') {
-                setnStart(true)
-            } else if (evt.type == 'end') {
-                setnStart(false)
-                setnDirection(false)
-                dragDistance = 0
-                dragDirection = false
-                setTouchControls({
-                    ...touchControls,
-                    left: false,
-                    right: false
-                })
-            }
-
-        })
-        .on('move', function (evt, data) {
-
-            // debug(data);
-            dragDistance = data.distance
-            console.log("2", dragDistance)
-
-            if (dragDistance > 15 && dragDirection) {
-
-                if (dragDirection == 'left') setTouchControls({
-                    ...touchControls,
-                    left: true,
-                    right: false
-                })
-
-                if (dragDirection == 'right') setTouchControls({
-                    ...touchControls,
-                    left: false,
-                    right: true
-                })
-
-            } else {
-                setTouchControls({
-                    ...touchControls,
-                    left: false,
-                    right: false
-                })
-            }
-
-        })
-        .on(' ' +
-            'dir:up plain:up dir:left plain:left dir:down ' +
-            'plain:down dir:right plain:right',
-            function (evt, data) {
-
-                if (evt.type == 'move') {
-                    dragDistance = data.distance
-                }  
-                
-                // dump(evt.type);
-                console.log("3", evt.type, dragDistance)
-
-              
-
-                if (evt.type == 'dir:left') {
-                    dragDirection = 'left'
-                    // setnDirection('left')
-                    // setTouchControls({
-                    //     ...touchControls,
-                    //     left: true,
-                    //     right: false
-                    // })
-                }
-
-                if (evt.type == 'dir:right') {
-                    dragDirection = 'right'
-                    // setnDirection('right')
-                    // setTouchControls({
-                    //     ...touchControls,
-                    //     left: false,
-                    //     right: true
-                    // })
-                }
-
-            }
-        )
-        .on('pressure', function (evt, data) {
-            // debug({
-            //   pressure: data
-            // });
-        });
-    }
+    const containerRef = useRef(null);
+    const managerRef = useRef(null);
+    const activeNipples = useRef(new Map()); // Map identifier -> 'move' | 'look'
 
     useEffect(() => {
-
-        if (!nippleCreated) {
-            console.log("Load nipple")
-            startNipple()
+        if (!touchControlsEnabled) {
+            setIsMountReady(false);
+            setTouchControls((prev) => ({
+                ...prev,
+                left: false,
+                right: false,
+                up: false,
+                down: false,
+                moveX: 0,
+                moveY: 0,
+                lookX: 0,
+                lookY: 0,
+                jump: false,
+                cameraView: false,
+            }));
+            return;
         }
 
-    }, []);
+        const timerId = window.setTimeout(() => {
+            setIsMountReady(true);
+        }, 1000);
+
+        return () => {
+            window.clearTimeout(timerId);
+        };
+    }, [touchControlsEnabled, setTouchControls]);
+
+    useEffect(() => {
+        if (!touchControlsEnabled || !isMountReady) {
+            return;
+        }
+
+        if (!containerRef.current) {
+            return;
+        }
+
+        const nipplejs = require("nipplejs");
+
+        const manager = nipplejs.create({
+            zone: containerRef.current,
+            mode: "dynamic",
+            multitouch: true,
+            maxNumberOfNipples: 2,
+            threshold: 0.1,
+            color: "white",
+            size: 110,
+            fadeTime: 120,
+        });
+
+        managerRef.current = manager;
+
+        manager.on("start", (evt, nipple) => {
+            const touchX = nipple.position.x;
+            const width = containerRef.current.offsetWidth;
+            const side = touchX < width / 2 ? "move" : "look";
+
+            activeNipples.current.set(nipple.identifier, side);
+
+            if (side === "look") {
+                setTouchControls((prev) => ({ ...prev, lookX: 0, lookY: 0 }));
+            }
+        });
+
+        manager.on("move", (evt, nipple) => {
+            const side = activeNipples.current.get(nipple.identifier);
+            if (!side) return;
+
+            const data = nipple.force > 0 ? nipple : null;
+            if (!data || !data.vector) return;
+
+            if (side === "move") {
+                const moveX = Math.max(-1, Math.min(1, data.vector.x || 0));
+                const moveY = Math.max(-1, Math.min(1, data.vector.y || 0));
+                const threshold = 0.25;
+
+                setTouchControls((prev) => ({
+                    ...prev,
+                    moveX,
+                    moveY,
+                    left: moveX < -threshold,
+                    right: moveX > threshold,
+                    up: moveY > threshold,
+                    down: moveY < -threshold,
+                }));
+            } else {
+                const lookX = Math.max(-1, Math.min(1, data.vector.x || 0));
+                const lookY = Math.max(-1, Math.min(1, data.vector.y || 0));
+
+                setTouchControls((prev) => ({
+                    ...prev,
+                    lookX,
+                    lookY,
+                }));
+            }
+        });
+
+        const handleEnd = (evt, nipple) => {
+            const side = activeNipples.current.get(nipple.identifier);
+            if (!side) return;
+
+            if (side === "move") {
+                setTouchControls((prev) => ({
+                    ...prev,
+                    left: false,
+                    right: false,
+                    up: false,
+                    down: false,
+                    moveX: 0,
+                    moveY: 0,
+                }));
+            } else {
+                setTouchControls((prev) => ({
+                    ...prev,
+                    lookX: 0,
+                    lookY: 0,
+                }));
+            }
+            activeNipples.current.delete(nipple.identifier);
+        };
+
+        manager.on("end", handleEnd);
+        manager.on("hidden", handleEnd);
+        manager.on("removed", handleEnd);
+
+        return () => {
+            manager.destroy();
+            managerRef.current = null;
+            activeNipples.current.clear();
+            setTouchControls((prev) => ({
+                ...prev,
+                left: false,
+                right: false,
+                up: false,
+                down: false,
+                moveX: 0,
+                moveY: 0,
+                lookX: 0,
+                lookY: 0,
+            }));
+        };
+    }, [touchControlsEnabled, isMountReady, sidebar, setTouchControls]);
+
+    const handleJumpStart = () => {
+        setTouchControls((prev) => ({
+            ...prev,
+            jump: true,
+        }));
+    };
+
+    const handleJumpEnd = () => {
+        setTouchControls((prev) => ({
+            ...prev,
+            jump: false,
+        }));
+    };
+
+    const handleCameraToggle = () => {
+        setTouchControls((prev) => ({
+            ...prev,
+            cameraView: true,
+        }));
+
+        window.setTimeout(() => {
+            useTouchControlsStore.getState().setTouchControls((prev) => ({
+                ...prev,
+                cameraView: false,
+            }));
+        }, 80);
+    };
+
+    const handleSprintToggle = () => {
+        setTouchControls((prev) => ({
+            ...prev,
+            sprint: !prev.sprint,
+        }));
+    }
+
+    if (!touchControlsEnabled || !isMountReady) {
+        return null;
+    }
 
     return (
-        <div className={`touch-controls-area ${!touchControlsEnabled && 'd-none'}`}>
+        <div className="touch-controls-area">
+            <div className="touch-zones" ref={containerRef}>
+                <div className="touch-zone touch-zone-move">
+                    <div className="touch-zone-label">MOVE</div>
+                </div>
+                <div className="touch-zone touch-zone-look">
+                    <div className="touch-zone-label">LOOK</div>
+                </div>
+            </div>
 
-            <div className='d-flex'>
+            <div className="touch-floating-actions">
 
-                <div>
-                    {/* <ArticlesButton
-                    onClick={() => {
-                        setTouchControls({
-                            left: true
-                        })
-                    }}
-                >
-                    Left
-                </ArticlesButton>
                 <ArticlesButton
-                    onClick={() => {
-                        setTouchControls({
-                            right: true
-                        })
-                    }}
+                    className="touch-action-btn touch-action-btn-sprint"
+                    onClick={handleSprintToggle}
                 >
-                    Right
-                </ArticlesButton> */}
-                    <div style={{
-                        position: 'relative',
-                        width: '100px',
-                        height: '100px',
-                        backgroundColor: 'black'
-                    }} id="zone_joystick"></div>
-                </div>
+                    Sprint
+                </ArticlesButton>
 
-                <div className='ms-2 d-none d-lg-block'>
-                    <div>Active: {nStart ? 'True' : 'False'}</div>
-                    <div>Direction: {nDirection ? nDirection : 'None'}</div>
-                    <div>Touch: {JSON.stringify(touchControls)}</div>
-                </div>
+                <ArticlesButton
+                    className="touch-action-btn touch-action-btn-jump"
+                    onMouseDown={handleJumpStart}
+                    onMouseUp={handleJumpEnd}
+                    onMouseLeave={handleJumpEnd}
+                    onTouchStart={handleJumpStart}
+                    onTouchEnd={handleJumpEnd}
+                >
+                    Jump
+                </ArticlesButton>
+
+                <ArticlesButton
+                    className="touch-action-btn touch-action-btn-camera"
+                    onClick={handleCameraToggle}
+                >
+                    Camera
+                </ArticlesButton>
 
             </div>
 
-            <JumpButton />
-
+            <div className="touch-debug d-none d-lg-block">
+                {JSON.stringify(touchControls)}
+            </div>
         </div>
-    )
+    );
 }
 
-const TouchControls = memo(TouchControlsBase, arePropsEqual);
+const TouchControls = memo(TouchControlsBase);
 
-export default TouchControls
+export default TouchControls;

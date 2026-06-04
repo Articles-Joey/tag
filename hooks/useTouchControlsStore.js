@@ -15,14 +15,22 @@ const useTouchControlsStore = create()(
 
             touchControls: {
                 jump: false,
+                sprint: false,
+                cameraView: false,
                 left: false,
                 right: false,
                 up: false,
                 down: false,
+                moveX: 0,
+                moveY: 0,
+                lookX: 0,
+                lookY: 0,
             },
             setTouchControls: (newValue) => {
                 set((prev) => ({
-                    touchControls: newValue
+                    touchControls: typeof newValue === 'function'
+                        ? newValue(prev.touchControls)
+                        : newValue
                 }))
             }
 

@@ -10,6 +10,8 @@ import { useStore } from "@/hooks/useStore"
 // import Duck from "../Models/Duck"
 import SpacesuitModel from "../Models/Spacesuit"
 import { degToRad } from "three/src/math/MathUtils"
+import { useAudioStore } from "@/hooks/useAudioStore"
+import useTouchControlsStore from "@/hooks/useTouchControlsStore"
 
 const JUMP_FORCE = 4;
 const SPEED = 4;
@@ -31,7 +33,10 @@ function PlayerBase() {
     const [speed, setSpeed] = useState(1)
     const [isJumping, setIsJumping] = useState(false)
 
-    const audioSettings = useStore((state) => state.audioSettings)
+    const audioSettings = useAudioStore((state) => state.audioSettings)
+    const touchControlsEnabled = useTouchControlsStore((state) => state.enabled)
+    const touchControls = useTouchControlsStore((state) => state.touchControls)
+
     const itPlayerId = usePeerStore(state => state.gameState?.itPlayerId)
     const peer = usePeerStore(state => state.peer)
 
@@ -54,12 +59,12 @@ function PlayerBase() {
     useEffect(() => {
         if (!audioSettings?.enabled) return;
 
-        const volume = audioSettings.soundEffectsVolume !== undefined ? (audioSettings.soundEffectsVolume / 100) : 0.5;
+        const volume = audioSettings.game_volume !== undefined ? (audioSettings.game_volume / 100) : 0.5;
         
         if(walkAudio.current) walkAudio.current.volume = volume;
         if(runAudio.current) runAudio.current.volume = volume;
         if(tagAudio.current) tagAudio.current.volume = volume;
-    }, [audioSettings?.soundEffectsVolume, audioSettings?.enabled])
+    }, [audioSettings?.game_volume, audioSettings?.enabled])
 
     useEffect(() => {
         if (!audioSettings?.enabled) {
@@ -132,11 +137,12 @@ function PlayerBase() {
 
     // Toggle third person view only on key press, not release (avoids double-toggle)
     useEffect(() => {
-        if (cameraView && !prevCameraView.current) {
+        const isCameraPressed = cameraView || (touchControlsEnabled && touchControls.cameraView);
+        if (isCameraPressed && !prevCameraView.current) {
             useTagGameStore.getState().toggleThirdPerson()
         }
-        prevCameraView.current = cameraView
-    }, [cameraView])
+        prevCameraView.current = isCameraPressed
+    }, [cameraView, touchControlsEnabled, touchControls.cameraView])
 
     // Scroll wheel to adjust camera distance in third person
     useEffect(() => {
@@ -297,6 +303,11 @@ function PlayerBase() {
         let forwardInput = (moveBackward ? 1 : 0) - (moveForward ? 1 : 0);
         let sideInput = (moveLeft ? 1 : 0) - (moveRight ? 1 : 0);
 
+        if (touchControlsEnabled) {
+            sideInput -= touchControls.moveX || 0;
+            forwardInput -= touchControls.moveY || 0;
+        }
+
         if (moveForward && !wasMovingForward.current) {
             if (Date.now() - lastForwardPressTime.current < 300) {
                 isDoubleTapSprinting.current = true;
@@ -306,11 +317,16 @@ function PlayerBase() {
         if (!moveForward) isDoubleTapSprinting.current = false;
         wasMovingForward.current = moveForward;
 
-        let isSprintingInput = shift || isDoubleTapSprinting.current;
-        let isJumpingInput = jump;
+        let isSprintingInput = shift || isDoubleTapSprinting.current || (touchControlsEnabled && touchControls.sprint);
+        let isJumpingInput = jump || (touchControlsEnabled && touchControls.jump);
         
         let rotationX = 0;
         let rotationY = 0;
+
+        if (touchControlsEnabled) {
+            rotationY -= (touchControls.lookX || 0) * LOOK_SENSITIVITY;
+            rotationX += (touchControls.lookY || 0) * LOOK_SENSITIVITY;
+        }
 
         if (gamepad) {
             // Left Stick (Movement) - Axes 0, 1
@@ -388,6 +404,13 @@ function PlayerBase() {
             if (Date.now() - lastSprintTime.current > recoveryCooldown) {
                 sprintEnergy.current = Math.min(5, sprintEnergy.current + delta)
             }
+        }
+
+        if (sprintEnergy.current <= 0 && touchControlsEnabled && touchControls.sprint) {
+            useTouchControlsStore.getState().setTouchControls((prev) => ({
+                ...prev,
+                sprint: false,
+            }));
         }
 
         setSprintEnergy(sprintEnergy.current)
