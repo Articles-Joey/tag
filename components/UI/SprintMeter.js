@@ -27,7 +27,7 @@ export default function SprintMeter() {
             borderRadius: '10px',
             overflow: 'hidden',
             pointerEvents: 'none', // Allow clicking through
-            zIndex: 100 // Ensure visibility
+            zIndex: 1 // Ensure visibility
         }}>
             <div style={{
                 width: `${percentage}%`,

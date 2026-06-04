@@ -5,9 +5,12 @@ import useTouchControlsStore from "@/hooks/useTouchControlsStore";
 import { useStore } from "@/hooks/useStore";
 
 function TouchControlsBase() {
+
     const touchControlsEnabled = useTouchControlsStore((state) => state.enabled);
     const touchControls = useTouchControlsStore((state) => state.touchControls);
     const setTouchControls = useTouchControlsStore((state) => state.setTouchControls);
+
+    const debug = useStore((state) => state.debug);
     const sidebar = useStore((state) => state.sidebar);
 
     const [isMountReady, setIsMountReady] = useState(false);
@@ -238,9 +241,12 @@ function TouchControlsBase() {
 
             </div>
 
-            <div className="touch-debug d-none d-lg-block">
-                {JSON.stringify(touchControls)}
-            </div>
+            {debug &&
+                <div className="touch-debug d-none d-lg-block">
+                    {JSON.stringify(touchControls)}
+                </div>
+            }
+
         </div>
     );
 }

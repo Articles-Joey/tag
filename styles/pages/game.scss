@@ -1,4 +1,5 @@
 @use "@/styles/components/global.scss" as *;
+@use "@/styles/components/touch-controls-area.scss" as *;
 
 .tag-game-page {
     position: relative;
@@ -41,155 +42,40 @@
         z-index: 1;
     }
 
-    .menu-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 50px;
-        z-index: 3;
-        background-color: rgba(0, 0, 0, 0.5);
+    // .menu-bar {
+    //     position: fixed;
+    //     bottom: 0;
+    //     left: 0;
+    //     width: 100%;
+    //     height: 50px;
+    //     z-index: 3;
+    //     background-color: rgba(0, 0, 0, 0.5);
 
-        // @include media-breakpoint-up(lg) {
-        //     display: none;
-        // }
-    }
+    //     // @include media-breakpoint-up(lg) {
+    //     //     display: none;
+    //     // }
+    // }
 
-    .mobile-menu {
-        position: fixed;
-        bottom: 50px;
-        left: 0;
-        width: 100%;
-        top: 0px;
-        // height: calc(100vh - 50px);
-        z-index: 2;
-        background-color: rgba(0, 0, 0, 0.75);
-        transform: translateY(calc(100% + 50px));
-        transition-duration: 200ms;
-        padding: 1rem;
-        display: flex;
-        align-items: flex-end;
+    // .mobile-menu {
+    //     position: fixed;
+    //     bottom: 50px;
+    //     left: 0;
+    //     width: 100%;
+    //     top: 0px;
+    //     // height: calc(100vh - 50px);
+    //     z-index: 2;
+    //     background-color: rgba(0, 0, 0, 0.75);
+    //     transform: translateY(calc(100% + 50px));
+    //     transition-duration: 200ms;
+    //     padding: 1rem;
+    //     display: flex;
+    //     align-items: flex-end;
 
-        &.show {
-            transform: translateY(0);
-        }
+    //     &.show {
+    //         transform: translateY(0);
+    //     }
 
-    }
-
-    .touch-controls-area {
-        position: absolute;
-        top: 0;
-        bottom: 50px;
-        left: 0;
-        width: 100%;
-        // height: 100%;
-        overflow: hidden;
-        z-index: 4;
-        pointer-events: none;
-
-        .touch-zones {
-            position: absolute;
-            inset: 0;
-            display: flex;
-        }
-
-        .touch-zone {
-            width: 50%;
-            height: 100%;
-            position: relative;
-            pointer-events: auto;
-            touch-action: none;
-            overflow: hidden;
-        }
-
-        .touch-zone-move {
-            background: radial-gradient(circle at 20% 70%, rgba(40, 128, 255, 0.16), transparent 42%);
-        }
-
-        .touch-zone-look {
-            background: radial-gradient(circle at 80% 70%, rgba(255, 180, 60, 0.14), transparent 42%);
-        }
-
-        .touch-zone-label {
-            position: absolute;
-            bottom: 22px;
-            font-size: 0.7rem;
-            letter-spacing: 0.12em;
-            opacity: 0.55;
-            color: #fff;
-            font-weight: 700;
-            pointer-events: none;
-            user-select: none;
-        }
-
-        .touch-zone-move .touch-zone-label {
-            left: 20px;
-        }
-
-        .touch-zone-look .touch-zone-label {
-            right: 20px;
-        }
-
-        .touch-floating-actions {
-            position: absolute;
-            right: 18px;
-            bottom: 24px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            pointer-events: auto;
-        }
-
-        .touch-action-btn {
-            border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.45);
-            color: #fff;
-            backdrop-filter: blur(6px);
-            min-width: 84px;
-            min-height: 44px;
-            font-weight: 700;
-        }
-
-        .touch-action-btn-sprint {
-            background: rgba(28, 128, 28, 0.55);
-        }
-
-        .touch-action-btn-jump {
-            background: rgba(40, 128, 255, 0.55);
-        }
-
-        .touch-action-btn-camera {
-            background: rgba(255, 165, 40, 0.52);
-        }
-
-        .touch-debug {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(0, 0, 0, 0.45);
-            color: #fff;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            pointer-events: none;
-        }
-
-        @include media-breakpoint-up(lg) {
-            .touch-floating-actions {
-                right: 28px;
-                bottom: 28px;
-            }
-
-            .touch-action-btn {
-                min-width: 92px;
-                min-height: 48px;
-            }
-        }
-
-        // @include media-breakpoint-up(lg) {
-        //     display: none;
-        // }
-    }
+    // }
 
     .debug-info,
     .game-info {
@@ -239,21 +125,21 @@
         // padding: 1rem;
     }
 
-    .panel-left {
-        display: none;
-    }
+    // .panel-left {
+    //     display: none;
+    // }
 
-    .panel-left, .panel-right {        
-        width: 300px;
-        height: calc(100vh - 0px);
-        flex-shrink: 0;
-    }
+    // .panel-left, .panel-right {        
+    //     width: 300px;
+    //     height: calc(100vh - 0px);
+    //     flex-shrink: 0;
+    // }
 
-    .panel-right {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+    // .panel-right {
+    //     display: flex;
+    //     justify-content: center;
+    //     align-items: center;
+    // }
 
     .game-panel {
         width: 100%;
