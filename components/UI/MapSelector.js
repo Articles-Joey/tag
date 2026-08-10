@@ -5,6 +5,7 @@ const MAPS = [
     { id: 'Forest', label: 'Forest', icon: 'fa-trees' },
     { id: 'Desert', label: 'Desert', icon: 'fa-sun' },
     { id: 'Room', label: 'Room', icon: 'fa-home' },
+    { id: 'Warehouse', label: 'Warehouse', icon: 'fa-warehouse' },
     // Use existing toon assets and components from compatible games to create this - See Move Match
     // { id: 'ToonTown', label: 'ToonTown', icon: 'fa-paw' },
 ];

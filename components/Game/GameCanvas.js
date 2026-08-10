@@ -28,11 +28,13 @@ import { degToRad } from "three/src/math/MathUtils";
 import ForestMap from "./Maps/ForestMap";
 import DesertMap from "./Maps/DesertMap";
 import RoomMap from "./Maps/RoomMap";
+import WarehouseMap from "./Maps/WarehouseMap";
 
 const MapComponents = {
     Forest: ForestMap,
     Desert: DesertMap,
     Room: RoomMap,
+    Warehouse: WarehouseMap,
 };
 // import { useStore } from "@/hooks/useStore";
 
