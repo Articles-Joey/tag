@@ -10,23 +10,48 @@ import Obstacles from "../Obstacles";
 import Barns from "../Barns";
 import HollowLog from "../HollowLog";
 import { degToRad } from "three/src/math/MathUtils";
-
-const texture = new TextureLoader().load(`${process.env.NEXT_PUBLIC_CDN}games/Race Game/grass.jpg`)
+import { useStore } from "@/hooks/useStore";
+import { useTexture } from "@react-three/drei";
 
 const GrassPlane = () => {
-    const width = 110;
-    const height = 110;
+    const graphicsQuality = useStore(state => state.graphicsQuality)
+    const [colorMap, normalMap] = useTexture([
+        '/textures/Grass/Poliigon_GrassPatchyGround_4585_BaseColor.jpg',
+        '/textures/Grass/Poliigon_GrassPatchyGround_4585_Normal.png'
+    ])
 
-    texture.magFilter = NearestFilter;
-    texture.wrapS = RepeatWrapping;
-    texture.wrapT = RepeatWrapping;
-    texture.repeat.set(20, 20);
+    let width
+    let height
+
+    let baseAmount = 300
+
+    if (graphicsQuality == 'Low') {
+        width = baseAmount
+        height = baseAmount
+    }
+    if (graphicsQuality == 'Medium') {
+        width = baseAmount * 2
+        height = baseAmount * 2
+    }
+    if (graphicsQuality == 'High') {
+        width = baseAmount * 3
+        height = baseAmount * 3
+    }
+
+    [colorMap, normalMap].forEach((t) => {
+        t.magFilter = NearestFilter;
+        t.wrapS = RepeatWrapping
+        t.wrapT = RepeatWrapping
+        t.repeat.set(width / 10, height / 10)
+    })
 
     return (
-        <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
-            <circleGeometry attach="geometry" args={[width, height]} />
-            <meshStandardMaterial attach="material" map={texture} />
-        </mesh>
+        <>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.25, 0]}>
+                <planeGeometry attach="geometry" args={[width, height]} />
+                <meshStandardMaterial attach="material" map={colorMap} normalMap={normalMap} />
+            </mesh>
+        </>
     );
 };
 
