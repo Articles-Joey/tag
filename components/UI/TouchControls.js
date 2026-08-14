@@ -45,7 +45,7 @@ function TouchControlsBase() {
         return () => {
             window.clearTimeout(timerId);
         };
-    }, [touchControlsEnabled, setTouchControls]);
+    }, [touchControlsEnabled, setTouchControls, setIsMountReady]);
 
     useEffect(() => {
         if (!touchControlsEnabled || !isMountReady) {

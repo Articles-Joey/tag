@@ -1,5 +1,6 @@
 {
   "name": "tag",
+  "description": "Multiplayer Peer-to-peer tag game built with React Three Fiber and Next.js. Run, hide, and tag your friends in a fun and dynamic 3D environment. Join the chase and see if you can avoid being 'it' in this fast-paced game of tag!",
   "version": "1.1.0",
   "private": false,
   "homepage": "https://tag.articles.media",
@@ -7,7 +8,7 @@
     "dev": "next dev --webpack -p 3034",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint"
   },
   "dependencies": {
     "@articles-media/articles-dev-box": "^1.6.2",

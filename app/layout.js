@@ -16,8 +16,8 @@ import "@articles-media/articles-dev-box/dist/style.css";
 import "@articles-media/articles-gamepad-helper/dist/articles-gamepad-helper.css";
 
 // import SocketLogicHandler from "@/components/SocketLogicHandler";
-import DarkModeHandler from '@/components/UI/DarkModeHandler';
-import GlobalClientModals from '@/components/UI/GlobalClientModals';
+// import DarkModeHandler from '@/components/UI/DarkModeHandler';
+// import GlobalClientModals from '@/components/UI/GlobalClientModals';
 import LayoutClient from './layout-client';
 
 // const geistSans = Geist({

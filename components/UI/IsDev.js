@@ -11,7 +11,7 @@ export default function IsDev({className, noOutline, children, inline}) {
     // const userReduxState = useSelector((state) => state.auth.user_details)
     const userReduxState = false
 
-    const [ isMounted, setIsMounted ] = useState()
+    const [ isMounted, setIsMounted ] = useState(false)
     useEffect(() => {
         setIsMounted(true)
     }, [])

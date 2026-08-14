@@ -1,15 +1,18 @@
 "use client"
 import packageInfo from '@/package.json';
+import { Suspense } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 
+import { useStore } from '@/hooks/useStore';
 import { useAudioStore } from '@/hooks/useAudioStore';
 import useTouchControlsStore from '@/hooks/useTouchControlsStore';
+
 import ToontownModeHandler from '@articles-media/articles-dev-box/ToontownModeHandler';
 import DarkModeHandler from "@articles-media/articles-dev-box/DarkModeHandler";
 import GlobalClientModals from '@articles-media/articles-dev-box/GlobalClientModals';
 import GlobalBody from '@articles-media/articles-dev-box/GlobalBody';
+import HotkeyHandler from '@articles-media/articles-dev-box/HotkeyHandler';
 import { ControllerConnectionWatcher } from '@articles-media/articles-gamepad-helper';
-import { Suspense } from 'react';
-import { useStore } from '@/hooks/useStore';
 
 export default function LayoutClient({ children }) {
 
@@ -24,10 +27,13 @@ export default function LayoutClient({ children }) {
             <DarkModeHandler
                 useStore={useStore}
             />
+
             <Suspense>
                 <ControllerConnectionWatcher />
             </Suspense>
+
             <Suspense>
+
                 <GlobalClientModals
                     useStore={useStore}
                     useAudioStore={useAudioStore}
@@ -102,6 +108,12 @@ export default function LayoutClient({ children }) {
                         </>
                     }}
                 />
+
+                <HotkeyHandler 
+                    useStore={useStore}
+                    useHotkeys={useHotkeys}
+                />
+
             </Suspense>
         </>
     );

@@ -1,23 +1,11 @@
 import { Canvas } from "@react-three/fiber"
 import { Sky, useDetectGPU, useTexture, OrbitControls, Stats } from "@react-three/drei";
 
-import { NearestFilter, RepeatWrapping, TextureLoader } from "three";
-// import GameGrid from "./GameGrid";
-
-// import Witch from "../../../../../../components/Games/Race Game/PlayerModels/Witch";
-// import { Star } from "../../../../../../components/Games/Race Game/Star";
-
-import Sand from '@/components/Game/Sand';
-// import { Cannon } from "./Models/Cannon";
-// import { PaintBucket } from "./Models/PaintBucket";
-
-// import Duck from "@/components/Models/Duck";
-import { DuckModel as Duck } from "@/components/Models/Duck.jsx";
 import { Debug, Physics } from "@react-three/cannon";
 import { Player } from "./Player";
 import { useTagGameStore } from "@/hooks/useTagGameStore";
 import { FPV } from "./FPV";
-import { memo, useMemo } from "react";
+import { memo, Suspense, useMemo } from "react";
 // import BotPlayer from "./BotPlayer";
 import Players from "./Players";
 import ItMarker from "./ItMarker";
@@ -38,34 +26,9 @@ const MapComponents = {
 };
 // import { useStore } from "@/hooks/useStore";
 
-function GameCanvas() {
-
-    // const GPUTier = useDetectGPU()
-
-    // const {
-    //     handleCameraChange,
-    //     gameState,
-    //     players,
-    //     move,
-    //     cameraInfo,
-    //     server
-    // } = props;
-
-    // const {
-    //     position,
-    //     controlType,
-    //     setControlType,
-    //     tagCounter,
-    //     debug,
-    //     setDebug
-    // } = useTagGameStore(state => ({
-    //     position: state.position,
-    //     controlType: state.controlType,
-    //     setControlType: state.setControlType,
-    //     tagCounter: state.tagCounter,
-    //     debug: state.debug,
-    //     setDebug: state.setDebug
-    // }));
+function GameCanvas({ 
+    landingAnimationMode = false 
+}) {
 
     const controlType = useTagGameStore(state => state.controlType)
     const debug = useTagGameStore(state => state.debug)
@@ -138,45 +101,31 @@ function GameCanvas() {
                 <Debug
                     scale={debug ? 1 : 0}
                 >
-                    {/* Active map provides ground, obstacles, and decorations */}
-                    <ActiveMap />
 
-                    {controlType == "Mouse and Keyboard" &&
-                        <Player />
-                    }
+                    <Suspense>
 
-                    <Players />
+                        {/* Active map provides ground, obstacles, and decorations */}
+                        <ActiveMap />
+    
+                        {!landingAnimationMode && <>
 
-                    {/* <BotPlayer /> */}
+                            {controlType == "Mouse and Keyboard" &&
+                                <Player />
+                            }
+        
+                            <Players />
+        
+                            {/* <BotPlayer /> */}
+        
+                            <ItMarker />
 
-                    <ItMarker />
+                        </>}
+
+                    </Suspense>
 
                 </Debug>
 
             </Physics>
-
-            {/* Fake Players */}
-            {/* <group scale={1} position={[0, 0.1, 0]}>
-                <Duck
-                    position={[10, 0, -10]}
-                    rotation={[0, 0, 0]}
-                />
-
-                <Duck
-                    position={[-10, 0, -10]}
-                    rotation={[0, 0, 0]}
-                />
-
-                <Duck
-                    position={[10, 0, 10]}
-                    rotation={[0, -Math.PI, 0]}
-                />
-
-                <Duck
-                    position={[-10, 0, 10]}
-                    rotation={[0, -Math.PI, 0]}
-                />
-            </group> */}
 
             {/* <ambientLight intensity={5} /> */}
             <spotLight intensity={500} position={[-50, 100, 50]} angle={5} penumbra={1} />
